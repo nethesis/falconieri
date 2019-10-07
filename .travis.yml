@@ -1,0 +1,27 @@
+language: go
+
+go:
+  - 1.13.x
+
+matrix:
+  include:
+    - env:
+        - NAME=falconieri
+        - DEPLOY_FILES=falconieri
+      script:
+        - cd $TRAVIS_BUILD_DIR/ && go build
+
+before_deploy:
+  - mkdir $TRAVIS_BUILD_DIR/deploy_files
+  - cd $TRAVIS_BUILD_DIR
+  - mv $DEPLOY_FILES $TRAVIS_BUILD_DIR/deploy_files/
+
+deploy:
+  - provider: releases
+    api_key: ${GITHUB_TOKEN}
+    file_glob: true
+    skip_cleanup: true
+    on:
+      repo: ${TRAVIS_REPO_SLUG}
+      tags: true
+    file: ${TRAVIS_BUILD_DIR}/deploy_files/*
