@@ -23,10 +23,12 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/methods"
 	"github.com/nethesis/falconieri/middleware"
 )
@@ -51,6 +53,10 @@ func DefineAPI(router *gin.Engine) {
 
 func main() {
 
+	// read and init configuration
+	ConfigFilePtr := flag.String("c", "/opt/falconieri/conf.json", "Path to configuration file")
+	flag.Parse()
+	configuration.Init(ConfigFilePtr)
 	// init routers
 	router := gin.Default()
 
