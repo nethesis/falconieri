@@ -29,10 +29,37 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/providers"
 	"github.com/nethesis/falconieri/utils"
 )
 
 func ProviderDispatch(c *gin.Context) {
+
+	switch provider := c.Param("provider"); provider {
+
+	case "snom":
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+		//registerDevice(c, "snom", mac.A0+mac.A1+mac.A2+mac.A3+mac.A4+mac.A5, url)
+
+		device := providers.SnomDevice{
+			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
+			Url: url,
+		}
+
+		err = device.Register()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+	default:
+		c.Status(http.StatusNotFound)
+	}
+
 	c.Status(http.StatusOK)
 }
 

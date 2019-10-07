@@ -55,3 +55,39 @@ func GetMacAddress(mac string) (models.MacAddress, error) {
 		return macAddress, errors.New("Malformed mac address.")
 	}
 }
+
+func ParseRegisterResponse(provider string, resp io.Reader) error {
+
+	var regexp1 = `<params><param><value><array><data><value><boolean>(.*)</boolean></value><value><string>(.*)</string></value></data></array></value></param></params>`
+
+	respBytes, err := ioutil.ReadAll(resp)
+
+	if err != nil {
+		return errors.New("Error on reading " + provider + " response")
+	}
+
+	respString := string(respBytes)
+
+	switch provider {
+	case "snom":
+		re := regexp.MustCompile(regexp1)
+		if re.MatchString(respString) {
+
+			response := re.FindStringSubmatch(respString)
+
+			var success bool
+
+			success, _ = strconv.ParseBool(response[1])
+			message := response[2]
+
+			if !success {
+				return errors.New("Error to register Device on " + provider + " provider: " + message)
+			}
+
+		} else {
+			return errors.New("Unknow response from" + provider + " provider")
+		}
+	}
+
+	return nil
+}
