@@ -23,11 +23,31 @@
 package methods
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 func ProviderDispatch(c *gin.Context) {
 	c.Status(http.StatusOK)
+}
+
+func parseParams(c *gin.Context) (models.MacAddress, string, error) {
+
+	var url models.Url
+
+	mac, err := utils.GetMacAddress(c.Param("mac"))
+	if err != nil {
+		return mac, url.Url, errors.New("Invalid mac address")
+	}
+
+	if err := c.BindJSON(&url); err != nil {
+		return mac, url.Url, errors.New("Missing url")
+	}
+
+	return mac, url.Url, nil
 }
