@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type ProviderConf struct {
@@ -34,9 +35,15 @@ type ProviderConf struct {
 	RpcUrl   string `json:"rpc_url"`
 }
 
+type GigasetConf struct {
+	ProviderConf
+	DisableCrc bool `json:"disable_crc"`
+}
+
 type Configuration struct {
 	Providers struct {
-		Snom ProviderConf `json:"snom"`
+		Snom    ProviderConf `json:"snom"`
+		Gigaset GigasetConf  `json:"gigaset"`
 	} `json: "providers"`
 }
 
@@ -65,5 +72,27 @@ func Init(ConfigFilePtr *string) {
 
 	if os.Getenv("SNOM_RPC_URL") != "" {
 		Config.Providers.Snom.RpcUrl = os.Getenv("SNOM_RPC_URL")
+	}
+
+	if os.Getenv("GIGASET_USER") != "" {
+		Config.Providers.Gigaset.User = os.Getenv("GIGASET_USER")
+	}
+
+	if os.Getenv("GIGASET_PASSWORD") != "" {
+		Config.Providers.Gigaset.Password = os.Getenv("GIGASET_PASSWORD")
+	}
+
+	if os.Getenv("GIGASET_RPC_URL") != "" {
+		Config.Providers.Gigaset.RpcUrl = os.Getenv("GIGASET_RPC_URL")
+	}
+
+	if os.Getenv("GIGASET_DISABLE_CRC") != "" {
+
+		disableCrc, err := strconv.ParseBool(os.Getenv("GIGASET_DISABLE_CRC"))
+		if err != nil {
+			Config.Providers.Gigaset.DisableCrc = disableCrc
+		} else {
+			Config.Providers.Gigaset.DisableCrc = false
+		}
 	}
 }

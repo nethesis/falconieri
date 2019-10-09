@@ -25,9 +25,11 @@ package methods
 import (
 	"errors"
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/models"
 	"github.com/nethesis/falconieri/providers"
 	"github.com/nethesis/falconieri/utils"
@@ -48,6 +50,50 @@ func ProviderDispatch(c *gin.Context) {
 		device := providers.SnomDevice{
 			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
 			Url: url,
+		}
+
+		err = device.Register()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+	case "gigaset":
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		var mac_address string
+
+		if configuration.Config.Providers.Gigaset.DisableCrc {
+
+			mac_address = mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5
+
+		} else {
+
+			if regexp.MustCompile(`^[A-Z0-9]{4}$`).MatchString(c.Query("crc")) {
+
+				mac_address = mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5 + "-" + c.Query("crc")
+
+			} else if c.Query("crc") == "" {
+
+				c.JSON(http.StatusBadRequest, gin.H{"message": "Missing MAC-ID crc"})
+				return
+
+			} else {
+
+				c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid MAC-ID crc format"})
+				return
+			}
+
+		}
+
+		device := providers.GigasetDevice{
+			Mac:      mac_address,
+			Url:      url,
+			Provider: "Falconieri",
 		}
 
 		err = device.Register()
