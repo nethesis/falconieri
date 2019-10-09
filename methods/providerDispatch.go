@@ -57,7 +57,8 @@ func ProviderDispatch(c *gin.Context) {
 		}
 
 	default:
-		c.Status(http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"message": "provider not supported"})
+		return
 	}
 
 	c.Status(http.StatusOK)
