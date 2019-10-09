@@ -33,6 +33,7 @@ type ProviderConf struct {
 	Password string `json:"password"`
 	User     string `json:"user"`
 	RpcUrl   string `json:"rpc_url"`
+	Disable  bool   `json:"disable"`
 }
 
 type GigasetConf struct {
@@ -74,6 +75,24 @@ func Init(ConfigFilePtr *string) {
 		Config.Providers.Snom.RpcUrl = os.Getenv("SNOM_RPC_URL")
 	}
 
+	if os.Getenv("SNOM_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("SNOM_DISABLE"))
+		if err != nil {
+			Config.Providers.Snom.Disable = disable
+		} else {
+			Config.Providers.Snom.Disable = false
+		}
+	}
+
+	if !Config.Providers.Snom.Disable &&
+		(Config.Providers.Snom.User == "" &&
+			Config.Providers.Snom.Password == "" &&
+			Config.Providers.Snom.RpcUrl == "") {
+
+		Config.Providers.Snom.Disable = true
+	}
+
 	if os.Getenv("GIGASET_USER") != "" {
 		Config.Providers.Gigaset.User = os.Getenv("GIGASET_USER")
 	}
@@ -94,5 +113,23 @@ func Init(ConfigFilePtr *string) {
 		} else {
 			Config.Providers.Gigaset.DisableCrc = false
 		}
+	}
+
+	if os.Getenv("GIGASET_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("GIGASET_DISABLE"))
+		if err != nil {
+			Config.Providers.Gigaset.Disable = disable
+		} else {
+			Config.Providers.Gigaset.Disable = false
+		}
+	}
+
+	if !Config.Providers.Gigaset.Disable &&
+		(Config.Providers.Gigaset.User == "" &&
+			Config.Providers.Gigaset.Password == "" &&
+			Config.Providers.Gigaset.RpcUrl == "") {
+
+		Config.Providers.Gigaset.Disable = true
 	}
 }

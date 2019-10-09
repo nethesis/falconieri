@@ -37,9 +37,9 @@ import (
 
 func ProviderDispatch(c *gin.Context) {
 
-	switch provider := c.Param("provider"); provider {
+	switch provider := c.Param("provider"); {
 
-	case "snom":
+	case (provider == "snom") && !configuration.Config.Providers.Snom.Disable:
 		mac, url, err := parseParams(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
@@ -58,7 +58,8 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
-	case "gigaset":
+	case (provider == "gigaset") && !configuration.Config.Providers.Gigaset.Disable:
+
 		mac, url, err := parseParams(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
