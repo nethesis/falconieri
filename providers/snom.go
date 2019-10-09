@@ -25,12 +25,14 @@ package providers
 import (
 	"bytes"
 	"errors"
+	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
 
 	"github.com/divan/gorilla-xmlrpc/xml"
 
 	"github.com/nethesis/falconieri/configuration"
-	"github.com/nethesis/falconieri/utils"
 )
 
 type SnomDevice struct {
@@ -39,6 +41,8 @@ type SnomDevice struct {
 }
 
 func (s SnomDevice) Register() error {
+
+	var response_regexp = `<params><param><value><array><data><value><boolean>(.*)</boolean></value><value><string>(.*)</string></value></data></array></value></param></params>`
 
 	buf, _ := xml.EncodeClientRequest("redirect.registerPhone", &s)
 
@@ -63,10 +67,30 @@ func (s SnomDevice) Register() error {
 		return errors.New("Remote call failed")
 	}
 
-	if err = utils.ParseRegisterResponse("snom", resp.Body); err != nil {
-		return err
+	respBytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return errors.New("Error on reading snom response")
+	}
+
+	re := regexp.MustCompile(response_regexp)
+
+	if re.MatchString(string(respBytes)) {
+
+		response := re.FindStringSubmatch(string(respBytes))
+
+		var success bool
+
+		success, _ = strconv.ParseBool(response[1])
+		message := response[2]
+
+		if !success {
+			return errors.New("Error to register Device on snom provider: " + message)
+		}
+
+	} else {
+		return errors.New("Unknow response from snom provider")
 	}
 
 	return nil
-
 }
