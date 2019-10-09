@@ -121,6 +121,26 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
+	case (provider == "yealink") && !configuration.Config.Providers.Yealink.Disable:
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		device := providers.YealinkDevice{
+			Mac:        mac.A0 + "-" + mac.A1 + "-" + mac.A2 + "-" + mac.A3 + "-" + mac.A4 + "-" + mac.A5,
+			Url:        url,
+			ServerName: "Falconieri",
+			Override:   "1",
+		}
+
+		err = device.Register()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"message": "provider not supported"})
 		return

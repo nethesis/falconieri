@@ -46,6 +46,7 @@ type Configuration struct {
 		Snom    ProviderConf `json:"snom"`
 		Gigaset GigasetConf  `json:"gigaset"`
 		Fanvil  ProviderConf `json:"fanvil"`
+		Yealink ProviderConf `json:"yealink"`
 	} `json: "providers"`
 }
 
@@ -164,4 +165,33 @@ func Init(ConfigFilePtr *string) {
 		Config.Providers.Fanvil.Disable = true
 	}
 
+	if os.Getenv("YEALINK_USER") != "" {
+		Config.Providers.Yealink.User = os.Getenv("YEALINK_USER")
+	}
+
+	if os.Getenv("YEALINK_PASSWORD") != "" {
+		Config.Providers.Yealink.Password = os.Getenv("YEALINK_PASSWORD")
+	}
+
+	if os.Getenv("YEALINK_RPC_URL") != "" {
+		Config.Providers.Yealink.RpcUrl = os.Getenv("YEALINK_RPC_URL")
+	}
+
+	if os.Getenv("YEALINK_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("YEALINK_DISABLE"))
+		if err != nil {
+			Config.Providers.Yealink.Disable = disable
+		} else {
+			Config.Providers.Yealink.Disable = false
+		}
+	}
+
+	if !Config.Providers.Yealink.Disable &&
+		(Config.Providers.Yealink.User == "" &&
+			Config.Providers.Yealink.Password == "" &&
+			Config.Providers.Yealink.RpcUrl == "") {
+
+		Config.Providers.Yealink.Disable = true
+	}
 }
