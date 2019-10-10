@@ -22,10 +22,15 @@ The `provider` section define the remote providers configuration, common configu
 * `user` Username for access to provider
 * `password` Password for access to provider 
 * `rpc_url` The URL for XML-RPC requests
+* `disable` Enable/Disable the provider, default `false`
 
 Supported providers:
 
-* [**snom**](https://service.snom.com/display/wiki/XML-RPC+API)
+* [**Snom**](https://service.snom.com/display/wiki/XML-RPC+API)
+* [**Gigaset**](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
+	* `disable_crc` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
+* [**Fanvil**]
+* [**Yealink**](http://support.yealink.com/documentFront/forwardToDocumentDetailPage?documentId=257)
 
 Example:
 
@@ -35,7 +40,8 @@ Example:
      "snom": {
        "user":"user",
        "password": "password",
-       "rpc_url": "https://secure-provisioning.snom.com:8083/xmlrpc/"
+       "rpc_url": "https://secure-provisioning.snom.com:8083/xmlrpc/",
+       "disable": false
      }
 }
 ```
@@ -45,6 +51,23 @@ Example:
 * `SNOM_USER` Username for access to snom provider
 * `SNOM_PASSWORD` Password for access to snom provider
 * `SNOM_RPC_URL` The URL for XML-RPC requests of snom provider
+* `SNOM_DISABLE` Enable/Disable the provider, default `false`
+
+* `GIGASET_USER` Username for access to snom provider
+* `GIGASET_PASSWORD` Password for access to snom provider
+* `GIGASET_RPC_URL` The URL for XML-RPC requests of snom provider
+* `GIGASET_DISABLE_CRC` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
+* `GIGASET_DISABLE` Enable/Disable the provider, default `false`
+
+* `FANVIL_USER` Username for access to snom provider
+* `FANVIL_PASSWORD` Password for access to snom provider
+* `FANVIL_RPC_URL` The URL for XML-RPC requests of snom provider
+* `FANVIL_DISABLE` Enable/Disable the provider, default `false`
+
+* `YEALINK_USER` Username for access to snom provider
+* `YEALINK_PASSWORD` Password for access to snom provider
+* `YEALINK_RPC_URL` The URL for XML-RPC requests of snom provider
+* `YEALINK_DISABLE` Enable/Disable the provider, default `false`
 
 ## APIs
 
@@ -52,7 +75,7 @@ Example:
 ---
 
 Register device on remote provisioning service, if the device is already configured,
-the new configuration override the old, supported providers:
+the new configuration override the old.
 
 #### Headers
 * `Content-Type: application/json`
@@ -60,6 +83,9 @@ the new configuration override the old, supported providers:
 #### Path variables
 * `provider`: Name of the remote provider
 * `mac`: Mac address of the device
+
+#### Query prameters
+* `crc` mac address's CRC code, only valid with Gigaset provider.
 
 #### Body
 A JSON object with the `url` key:
