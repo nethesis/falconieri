@@ -45,6 +45,7 @@ type Configuration struct {
 	Providers struct {
 		Snom    ProviderConf `json:"snom"`
 		Gigaset GigasetConf  `json:"gigaset"`
+		Fanvil  ProviderConf `json:"fanvil"`
 	} `json: "providers"`
 }
 
@@ -132,4 +133,35 @@ func Init(ConfigFilePtr *string) {
 
 		Config.Providers.Gigaset.Disable = true
 	}
+
+	if os.Getenv("FANVIL_USER") != "" {
+		Config.Providers.Fanvil.User = os.Getenv("FANVIL_USER")
+	}
+
+	if os.Getenv("FANVIL_PASSWORD") != "" {
+		Config.Providers.Fanvil.Password = os.Getenv("FANVIL_PASSWORD")
+	}
+
+	if os.Getenv("FANVIL_RPC_URL") != "" {
+		Config.Providers.Fanvil.RpcUrl = os.Getenv("FANVIL_RPC_URL")
+	}
+
+	if os.Getenv("FANVIL_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("FANVIL_DISABLE"))
+		if err != nil {
+			Config.Providers.Fanvil.Disable = disable
+		} else {
+			Config.Providers.Fanvil.Disable = false
+		}
+	}
+
+	if !Config.Providers.Fanvil.Disable &&
+		(Config.Providers.Fanvil.User == "" &&
+			Config.Providers.Fanvil.Password == "" &&
+			Config.Providers.Fanvil.RpcUrl == "") {
+
+		Config.Providers.Fanvil.Disable = true
+	}
+
 }

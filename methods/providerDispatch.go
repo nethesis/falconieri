@@ -103,6 +103,24 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
+	case (provider == "fanvil") && !configuration.Config.Providers.Fanvil.Disable:
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		device := providers.FanvilDevice{
+			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
+			Url: url,
+		}
+
+		err = device.Register()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"message": "provider not supported"})
 		return
