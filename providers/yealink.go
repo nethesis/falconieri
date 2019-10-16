@@ -44,7 +44,7 @@ type YealinkDevice struct {
 
 func (s YealinkDevice) Register() error {
 
-	var response_regexp = `<params><param><value><array><data><value><boolean>(.*)</boolean></value><value>(.*)</value></data></array></value></param></params>`
+	var response_regexp = `(?s)<params><param><value><array><data><value><boolean>(.*)</boolean></value><value>(.*)</value></data></array></value></param></params>`
 
 	buf, _ := xml.EncodeClientRequest("redirect.registerDeviceWithUniqueUrl", &s)
 
