@@ -37,6 +37,10 @@ import (
 
 func ProviderDispatch(c *gin.Context) {
 
+	var device interface {
+		Register() error
+	}
+
 	switch provider := c.Param("provider"); {
 
 	case (provider == "snom") && !configuration.Config.Providers.Snom.Disable:
@@ -45,22 +49,10 @@ func ProviderDispatch(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		//registerDevice(c, "snom", mac.A0+mac.A1+mac.A2+mac.A3+mac.A4+mac.A5, url)
 
-		device := providers.SnomDevice{
+		device = providers.SnomDevice{
 			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
 			Url: url,
-		}
-
-		err = device.Register()
-		if err != nil {
-			if errors.Unwrap(err) != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
-					"message": errors.Unwrap(err).Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
 		}
 
 	case (provider == "gigaset") && !configuration.Config.Providers.Gigaset.Disable:
@@ -96,21 +88,10 @@ func ProviderDispatch(c *gin.Context) {
 
 		}
 
-		device := providers.GigasetDevice{
+		device = providers.GigasetDevice{
 			Mac:      mac_address,
 			Url:      url,
 			Provider: "Falconieri",
-		}
-
-		err = device.Register()
-		if err != nil {
-			if errors.Unwrap(err) != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
-					"message": errors.Unwrap(err).Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
 		}
 
 	case (provider == "fanvil") && !configuration.Config.Providers.Fanvil.Disable:
@@ -120,20 +101,9 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
-		device := providers.FanvilDevice{
+		device = providers.FanvilDevice{
 			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
 			Url: url,
-		}
-
-		err = device.Register()
-		if err != nil {
-			if errors.Unwrap(err) != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
-					"message": errors.Unwrap(err).Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
 		}
 
 	case (provider == "yealink") && !configuration.Config.Providers.Yealink.Disable:
@@ -143,26 +113,26 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
-		device := providers.YealinkDevice{
+		device = providers.YealinkDevice{
 			Mac:        mac.A0 + "-" + mac.A1 + "-" + mac.A2 + "-" + mac.A3 + "-" + mac.A4 + "-" + mac.A5,
 			Url:        url,
 			ServerName: "Falconieri",
 			Override:   "1",
 		}
 
-		err = device.Register()
-		if err != nil {
-			if errors.Unwrap(err) != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
-					"message": errors.Unwrap(err).Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
-		}
-
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"error": "provider_not_supported"})
+		return
+	}
+
+	err := device.Register()
+	if err != nil {
+		if errors.Unwrap(err) != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
+				"message": errors.Unwrap(err).Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

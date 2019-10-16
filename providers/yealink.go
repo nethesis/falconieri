@@ -96,7 +96,7 @@ func (s YealinkDevice) Register() error {
 		}
 
 	} else {
-		return errors.New("unknow_response_from_provider")
+		return errors.New("unknown_response_from_provider")
 	}
 
 	return nil

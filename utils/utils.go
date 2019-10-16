@@ -79,7 +79,7 @@ func ParseProviderError(message string) error {
 
 	default:
 		return models.ProviderError{
-			Message:      "unknow_provider_error: " + message,
+			Message:      "unknown_provider_error: " + message,
 			WrappedError: errors.New(message),
 		}
 	}
