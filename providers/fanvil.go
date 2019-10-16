@@ -36,6 +36,8 @@ import (
 	"github.com/divan/gorilla-xmlrpc/xml"
 
 	"github.com/nethesis/falconieri/configuration"
+	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 type FanvilDevice struct {
@@ -67,18 +69,22 @@ func (d FanvilDevice) Register() error {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return err
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Remote call failed")
+		return errors.New("provider_remote_call_failed")
 	}
 
 	err = fanvilParseResponse(resp.Body)
 
-	if (err != nil) && (err.Error() != "Error:server_had_existed") {
+	if (err != nil) && (errors.Unwrap(err).Error() != "Error:server_had_existed") {
 		return err
 	}
 
@@ -99,13 +105,17 @@ func (d FanvilDevice) Register() error {
 	resp, err = http.DefaultClient.Do(req)
 
 	if err != nil {
-		return err
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Remote call failed")
+		return errors.New("provider_remote_call_failed")
 	}
 
 	//Register the device
@@ -126,13 +136,17 @@ func (d FanvilDevice) Register() error {
 	resp, err = http.DefaultClient.Do(req)
 
 	if err != nil {
-		return err
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Remote call failed")
+		return errors.New("provider_remote_call_failed")
 	}
 
 	err = fanvilParseResponse(resp.Body)
@@ -166,7 +180,7 @@ func fanvilParseResponse(body io.ReadCloser) error {
 	respBytes, err := ioutil.ReadAll(body)
 
 	if err != nil {
-		return errors.New("Error on reading Fanvil response")
+		return errors.New("read_remote_response_failed")
 	}
 
 	re := regexp.MustCompile(response_regexp)
@@ -181,11 +195,11 @@ func fanvilParseResponse(body io.ReadCloser) error {
 		message := response[2]
 
 		if !success {
-			return errors.New(message)
+			return utils.ParseProviderError(message)
 		}
 
 	} else {
-		return errors.New("Unknow response from Fanvil provider")
+		return errors.New("unknow_response_from_provider")
 	}
 
 	return nil

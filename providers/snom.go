@@ -33,6 +33,8 @@ import (
 	"github.com/divan/gorilla-xmlrpc/xml"
 
 	"github.com/nethesis/falconieri/configuration"
+	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 type SnomDevice struct {
@@ -58,19 +60,23 @@ func (s SnomDevice) Register() error {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return err
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Remote call failed")
+		return errors.New("provider_remote_call_failed")
 	}
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return errors.New("Error on reading snom response")
+		return errors.New("read_remote_response_failed")
 	}
 
 	re := regexp.MustCompile(response_regexp)
@@ -85,11 +91,11 @@ func (s SnomDevice) Register() error {
 		message := response[2]
 
 		if !success {
-			return errors.New("Error to register Device on snom provider: " + message)
+			return utils.ParseProviderError(message)
 		}
 
 	} else {
-		return errors.New("Unknow response from snom provider")
+		return errors.New("unknow_response_from_provider")
 	}
 
 	return nil

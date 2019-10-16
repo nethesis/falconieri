@@ -33,6 +33,8 @@ import (
 	"github.com/divan/gorilla-xmlrpc/xml"
 
 	"github.com/nethesis/falconieri/configuration"
+	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 type YealinkDevice struct {
@@ -60,16 +62,24 @@ func (s YealinkDevice) Register() error {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return err
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Remote call failed")
+		return errors.New("provider_remote_call_failed")
 	}
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return errors.New("read_remote_response_failed")
+	}
 
 	re := regexp.MustCompile(response_regexp)
 	if re.MatchString(string(respBytes)) {
@@ -82,11 +92,11 @@ func (s YealinkDevice) Register() error {
 		message := response[2]
 
 		if !success {
-			return errors.New("Error to register Device on yealink provider: " + message)
+			return utils.ParseProviderError(message)
 		}
 
 	} else {
-		return errors.New("Unknow response from yealink provider")
+		return errors.New("unknow_response_from_provider")
 	}
 
 	return nil

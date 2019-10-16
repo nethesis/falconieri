@@ -25,6 +25,7 @@ package utils
 import (
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/nethesis/falconieri/models"
 )
@@ -49,6 +50,37 @@ func GetMacAddress(mac string) (models.MacAddress, error) {
 		return macAddress, nil
 
 	} else {
-		return macAddress, errors.New("Malformed mac address.")
+		return macAddress, errors.New("malformed_mac_address")
+	}
+}
+
+func ParseProviderError(message string) error {
+
+	switch {
+	case message == "Error:malformed_url", //snom
+		message == "Error: url_format_error",                                                            //fanvil
+		strings.HasPrefix(message, "url_invalid:"),                                                      //gigaset
+		message == "Error:The url can only begin with 'http://' or 'https://' or 'ftp://' or 'tftp://'": //yealink
+
+		return errors.New("malformed_url")
+
+	case message == "Error:malformed_mac", //snom
+		message == "Error: mac_format_error",         //fanvil
+		strings.HasPrefix(message, "mac_not_exist:"): //gigaset
+
+		return errors.New("not_valid_mac_address")
+
+	case message == "Error:owned_by_other_user", //snom
+		message == "Error: device_had_existed",                         //fanvil
+		strings.HasPrefix(message, "mac_already_in_use:"),              //gigaset
+		regexp.MustCompile(`^Error:[a-z0-9]{10}`).MatchString(message): //yealink
+
+		return errors.New("device_owned_by_other_user")
+
+	default:
+		return models.ProviderError{
+			Message:      "unknow_provider_error: " + message,
+			WrappedError: errors.New(message),
+		}
 	}
 }
