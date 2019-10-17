@@ -116,23 +116,23 @@ Example:
 
 ### Environment Variables
 
-* `SNOM_USER` Username for access to snom provider
-* `SNOM_PASSWORD` Password for access to snom provider
-* `SNOM_RPC_URL` The URL for XML-RPC requests of snom provider
+* `SNOM_USER` Username for access to Snom provider
+* `SNOM_PASSWORD` Password for access to Snom provider
+* `SNOM_RPC_URL` The URL for XML-RPC requests of Snom provider
 * `SNOM_DISABLE` Enable/Disable the provider, default `false`
 
-* `GIGASET_USER` Username for access to snom provider
-* `GIGASET_PASSWORD` Password for access to snom provider
-* `GIGASET_RPC_URL` The URL for XML-RPC requests of snom provider
+* `GIGASET_USER` Username for access to Gigaset provider
+* `GIGASET_PASSWORD` Password for access to Gigaset provider
+* `GIGASET_RPC_URL` The URL for XML-RPC requests of Gigaset provider
 * `GIGASET_DISABLE_CRC` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
 * `GIGASET_DISABLE` Enable/Disable the provider, default `false`
 
-* `FANVIL_USER` Username for access to snom provider
-* `FANVIL_PASSWORD` Password for access to snom provider
-* `FANVIL_RPC_URL` The URL for XML-RPC requests of snom provider
+* `FANVIL_USER` Username for access to Fanvil provider
+* `FANVIL_PASSWORD` Password for access to Fanvil provider
+* `FANVIL_RPC_URL` The URL for XML-RPC requests of Fanvil provider
 * `FANVIL_DISABLE` Enable/Disable the provider, default `false`
 
-* `YEALINK_USER` Username for access to snom provider
-* `YEALINK_PASSWORD` Password for access to snom provider
-* `YEALINK_RPC_URL` The URL for XML-RPC requests of snom provider
+* `YEALINK_USER` Username for access to Yealink provider
+* `YEALINK_PASSWORD` Password for access to Yealink provider
+* `YEALINK_RPC_URL` The URL for XML-RPC requests of Yealink provider
 * `YEALINK_DISABLE` Enable/Disable the provider, default `false`
