@@ -6,6 +6,7 @@ After=network.target cloud-init.service
 Type=simple
 User=root
 WorkingDirectory=/opt/falconieri
+EnvironmentFile=-/opt/falconieri/conf.env
 Environment=GIN_MODE=release
 ExecStart=/opt/falconieri/falconieri
 Restart=on-failure
