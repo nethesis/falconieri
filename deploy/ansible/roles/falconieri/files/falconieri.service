@@ -1,0 +1,15 @@
+[Unit]
+Description=Falconieri Remote Provisioning Gateway
+After=network.target cloud-init.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/falconieri
+Environment=GIN_MODE=release
+ExecStart=/opt/falconieri/falconieri
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

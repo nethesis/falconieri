@@ -1,0 +1,30 @@
+---
+- name: Create falconieri destination directory
+  file:
+    path: /opt/falconieri
+    state: directory
+    recurse: yes
+
+- name: Download and install falconieri executable
+  get_url:
+    url: "{{ falconieri_url }}/releases/download/{{ falconieri_version }}/falconieri"
+    force: true
+    dest: /opt/falconieri/falconieri
+    mode: 0755
+
+- name: Copy falconieri configuration
+  template:
+    dest: /opt/falconieri/conf.json
+    src: conf.json.tpl
+
+- name: Copy systemd unit file
+  copy:
+    dest: /usr/lib/systemd/system/
+    src: falconieri.service
+
+- name: Systemd configuration
+  systemd:
+    name: falconieri
+    daemon_reload: true
+    enabled: true
+    state: started
