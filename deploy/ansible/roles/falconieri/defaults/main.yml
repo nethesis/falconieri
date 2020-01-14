@@ -5,20 +5,20 @@ falconieri_version: v1.0.0
 snom_user: user
 snom_password: password
 snom_rpc_url: https://secure-provisioning.snom.com:8083/xmlrpc/
-snom_disable: false
+snom_disable: "false"
 
 yealink_user: user
 yealink_password: password
 yealink_rpc_url: https://api-dm.yealink.com:8443/xmlrpc
-yealink_disable: false
+yealink_disable: "false"
 
 gigaset_user: user
 gigaset_password: password
 gigaset_rpc_url: https://prov.gigaset.net/apxml/rpc.do
-gigaset_disable: false
-gigaset_disable_crc: false
+gigaset_disable: "false"
+gigaset_disable_crc: "false"
 
 fanvil_user: user
 fanvil_password: password
 fanvil_rpc_url: http://fdps.fanvil.com/xmlrpc.php
-fanvil_disable: false
+fanvil_disable: "false"
