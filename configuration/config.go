@@ -80,10 +80,8 @@ func Init(ConfigFilePtr *string) {
 	if os.Getenv("SNOM_DISABLE") != "" {
 
 		disable, err := strconv.ParseBool(os.Getenv("SNOM_DISABLE"))
-		if err != nil {
+		if err == nil {
 			Config.Providers.Snom.Disable = disable
-		} else {
-			Config.Providers.Snom.Disable = false
 		}
 	}
 
@@ -110,20 +108,16 @@ func Init(ConfigFilePtr *string) {
 	if os.Getenv("GIGASET_DISABLE_CRC") != "" {
 
 		disableCrc, err := strconv.ParseBool(os.Getenv("GIGASET_DISABLE_CRC"))
-		if err != nil {
+		if err == nil {
 			Config.Providers.Gigaset.DisableCrc = disableCrc
-		} else {
-			Config.Providers.Gigaset.DisableCrc = false
 		}
 	}
 
 	if os.Getenv("GIGASET_DISABLE") != "" {
 
 		disable, err := strconv.ParseBool(os.Getenv("GIGASET_DISABLE"))
-		if err != nil {
+		if err == nil {
 			Config.Providers.Gigaset.Disable = disable
-		} else {
-			Config.Providers.Gigaset.Disable = false
 		}
 	}
 
@@ -150,10 +144,8 @@ func Init(ConfigFilePtr *string) {
 	if os.Getenv("FANVIL_DISABLE") != "" {
 
 		disable, err := strconv.ParseBool(os.Getenv("FANVIL_DISABLE"))
-		if err != nil {
+		if err == nil {
 			Config.Providers.Fanvil.Disable = disable
-		} else {
-			Config.Providers.Fanvil.Disable = false
 		}
 	}
 
@@ -180,10 +172,8 @@ func Init(ConfigFilePtr *string) {
 	if os.Getenv("YEALINK_DISABLE") != "" {
 
 		disable, err := strconv.ParseBool(os.Getenv("YEALINK_DISABLE"))
-		if err != nil {
+		if err == nil {
 			Config.Providers.Yealink.Disable = disable
-		} else {
-			Config.Providers.Yealink.Disable = false
 		}
 	}
 
