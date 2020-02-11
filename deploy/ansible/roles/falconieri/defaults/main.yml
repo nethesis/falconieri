@@ -1,6 +1,6 @@
 ---
 falconieri_url: https://github.com/nethesis/falconieri
-falconieri_version: v1.0.2
+falconieri_version: v1.0.3
 
 snom_user: user
 snom_password: password
