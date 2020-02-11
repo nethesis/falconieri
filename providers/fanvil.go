@@ -51,12 +51,11 @@ func (d FanvilDevice) Register() error {
 
 	password := fanvilGetPassword()
 
-	//Create Server
-	buf, _ := xml.EncodeClientRequest("redirect.addServer",
+	//Delete old server
+	buf, _ := xml.EncodeClientRequest("redirect.deleteServer",
 		&struct {
 			GroupName string
-			GroupUrl  string
-		}{GroupName: d.Mac, GroupUrl: d.Url})
+		}{GroupName: d.Mac})
 
 	req, _ := http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
@@ -84,7 +83,44 @@ func (d FanvilDevice) Register() error {
 
 	err = fanvilParseResponse(resp.Body)
 
-	if (err != nil) && (errors.Unwrap(err).Error() != "Error:server_had_existed") {
+	if (err != nil) && (errors.Unwrap(err).Error() != "Error:server_not_exist") {
+		return err
+	}
+
+	//Create Server
+	buf, _ = xml.EncodeClientRequest("redirect.addServer",
+		&struct {
+			GroupName string
+			GroupUrl  string
+		}{GroupName: d.Mac, GroupUrl: d.Url})
+
+	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
+		bytes.NewReader(buf))
+
+	req.SetBasicAuth(configuration.Config.Providers.Fanvil.User, password)
+
+	req.Header.Set("Content-Type", "text/xml")
+	req.Header.Set("User-Agent", " Falconieri/1")
+
+	resp, err = http.DefaultClient.Do(req)
+
+	if err != nil {
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("provider_remote_call_failed")
+	}
+
+	err = fanvilParseResponse(resp.Body)
+
+	if err != nil {
 		return err
 	}
 
