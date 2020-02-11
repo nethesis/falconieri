@@ -56,7 +56,7 @@ func (d FanvilDevice) Register() error {
 		&struct {
 			GroupName string
 			GroupUrl  string
-		}{GroupName: d.Url, GroupUrl: d.Url})
+		}{GroupName: d.Mac, GroupUrl: d.Url})
 
 	req, _ := http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
@@ -123,7 +123,7 @@ func (d FanvilDevice) Register() error {
 		&struct {
 			Mac        string
 			ServerName string
-		}{Mac: d.Mac, ServerName: d.Url})
+		}{Mac: d.Mac, ServerName: d.Mac})
 
 	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
