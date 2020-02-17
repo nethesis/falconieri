@@ -52,6 +52,7 @@ Errors codes:
 * `missing_mac_address`: the mac address of the device is missing.
 * `malformed_mac_address`: the mac address of the device is malformed.
 * `missing_url`: the url to associate to device is missing.
+* `unsupported_url_scheme`: the scheme of the url is not supported (valid schemes: `ftp`, `tftp`, `http`, `https`)
 * `missing_mac-id_crc`: the crc code of the provided mac address is missing,
   error returned only in case of Gigaset provider.
 * `invalid_mac-id_crc_format`: the crc code provided is in invalid format,

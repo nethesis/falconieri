@@ -25,6 +25,7 @@ package methods
 import (
 	"errors"
 	"net/http"
+	net_url "net/url"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
@@ -150,6 +151,13 @@ func parseParams(c *gin.Context) (models.MacAddress, string, error) {
 
 	if err := c.BindJSON(&url); err != nil {
 		return mac, url.Url, errors.New("missing_url")
+	}
+
+	if pUrl, _ := net_url.Parse(url.Url); pUrl.Scheme != "ftp" &&
+		pUrl.Scheme != "tftp" &&
+		pUrl.Scheme != "http" &&
+		pUrl.Scheme != "https" {
+		return mac, url.Url, errors.New("unsupported_url_scheme")
 	}
 
 	return mac, url.Url, nil
