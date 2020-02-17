@@ -33,6 +33,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/divan/gorilla-xmlrpc/xml"
 
@@ -109,7 +110,7 @@ func (d FanvilDevice) Register() error {
 		&struct {
 			ServerConfigs []string
 		}{ServerConfigs: []string{"cfgName=" + d.Mac, "cfgPfMode=1",
-			"cfgPfSrv=" + Url.Host, "cfgPfName=" + Url.Path,
+			"cfgPfSrv=" + Url.Host, "cfgPfName=" + strings.TrimPrefix(Url.Path, "/"),
 			"cfgPfProt=" + UrlScheme}})
 
 	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
