@@ -30,6 +30,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 
@@ -88,11 +89,28 @@ func (d FanvilDevice) Register() error {
 	}
 
 	//Create Server
-	buf, _ = xml.EncodeClientRequest("redirect.addServer",
+	var Url *url.URL
+	var UrlScheme string
+
+	Url, err = url.Parse(d.Url)
+
+	switch Url.Scheme {
+	case "ftp":
+		UrlScheme = "1"
+	case "tftp":
+		UrlScheme = "2"
+	case "http":
+		UrlScheme = "4"
+	case "https":
+		UrlScheme = "5"
+	}
+
+	buf, _ = xml.EncodeClientRequest("redirect.addMaterialServer",
 		&struct {
-			GroupName string
-			GroupUrl  string
-		}{GroupName: d.Mac, GroupUrl: d.Url})
+			ServerConfigs []string
+		}{ServerConfigs: []string{"cfgName=" + d.Mac, "cfgPfMode=1",
+			"cfgPfSrv=" + Url.Host, "cfgPfName=" + Url.Path,
+			"cfgPfProt=" + UrlScheme}})
 
 	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
