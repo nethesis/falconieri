@@ -106,10 +106,17 @@ func (d FanvilDevice) Register() error {
 		UrlScheme = "5"
 	}
 
+	/* Server/Group configuration:
+	 *   - Disable DHCP provision: cfgDhcpOpt=false
+	 *   - Disable PnP provision: cfgPnpEnable=false
+	 *   - Apply the configuration after the reboot: cfgPfMode=1
+	 */
+
 	buf, _ = xml.EncodeClientRequest("redirect.addMaterialServer",
 		&struct {
 			ServerConfigs []string
 		}{ServerConfigs: []string{"cfgName=" + d.Mac, "cfgPfMode=1",
+			"cfgDhcpOpt=false", "cfgPnpEnable=false",
 			"cfgPfSrv=" + Url.Host, "cfgPfName=" + strings.TrimPrefix(Url.Path, "/"),
 			"cfgPfProt=" + UrlScheme}})
 
