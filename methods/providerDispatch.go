@@ -51,18 +51,21 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
+		redirectUrl, _ := net_url.QueryUnescape(url)
+
 		device = providers.SnomDevice{
 			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
-			Url: url,
+			Url: redirectUrl,
 		}
 
 	case (provider == "gigaset") && !configuration.Config.Providers.Gigaset.Disable:
-
 		mac, url, err := parseParams(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		redirectUrl, _ := net_url.QueryUnescape(url)
 
 		var mac_address string
 
@@ -91,7 +94,7 @@ func ProviderDispatch(c *gin.Context) {
 
 		device = providers.GigasetDevice{
 			Mac:      mac_address,
-			Url:      url,
+			Url:      redirectUrl,
 			Provider: "Falconieri",
 		}
 
@@ -114,9 +117,11 @@ func ProviderDispatch(c *gin.Context) {
 			return
 		}
 
+		redirectUrl, _ := net_url.QueryUnescape(url)
+
 		device = providers.YealinkDevice{
 			Mac:        mac.A0 + "-" + mac.A1 + "-" + mac.A2 + "-" + mac.A3 + "-" + mac.A4 + "-" + mac.A5,
-			Url:        url,
+			Url:        redirectUrl,
 			ServerName: "Falconieri",
 			Override:   "1",
 		}
@@ -146,19 +151,25 @@ func parseParams(c *gin.Context) (models.MacAddress, string, error) {
 
 	mac, err := utils.GetMacAddress(c.Param("mac"))
 	if err != nil {
-		return mac, url.Url, errors.New("missing_mac_address")
+		return mac, "", errors.New("missing_mac_address")
 	}
 
 	if err := c.BindJSON(&url); err != nil {
-		return mac, url.Url, errors.New("missing_url")
+		return mac, "", errors.New("missing_url")
 	}
 
-	if pUrl, _ := net_url.Parse(url.Url); pUrl.Scheme != "ftp" &&
+	var pUrl *net_url.URL
+	pUrl, err = net_url.Parse(url.Url)
+	if err != nil {
+		return mac, "", errors.New("unable_to_parse_url")
+	}
+
+	if pUrl.Scheme != "ftp" &&
 		pUrl.Scheme != "tftp" &&
 		pUrl.Scheme != "http" &&
 		pUrl.Scheme != "https" {
-		return mac, url.Url, errors.New("unsupported_url_scheme")
+		return mac, pUrl.String(), errors.New("unsupported_url_scheme")
 	}
 
-	return mac, url.Url, nil
+	return mac, pUrl.String(), nil
 }

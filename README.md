@@ -32,7 +32,7 @@ format with the octets separated by hyphens. E.g. `AC-DE-48-23-45-67`.
 
 ###### Body
 A JSON object with the `url` field:
-* `url` URL of configuration server.
+* `url` URL of configuration server, must be formatted as URI standard https://tools.ietf.org/html/rfc3986.
 
 Example:
 ```json
@@ -52,6 +52,7 @@ Errors codes:
 * `missing_mac_address`: the mac address of the device is missing.
 * `malformed_mac_address`: the mac address of the device is malformed.
 * `missing_url`: the url to associate to device is missing.
+* `unable_to_parse_url`: the url is not correctly formatted.
 * `unsupported_url_scheme`: the scheme of the url is not supported (valid schemes: `ftp`, `tftp`, `http`, `https`)
 * `missing_mac-id_crc`: the crc code of the provided mac address is missing,
   error returned only in case of Gigaset provider.
