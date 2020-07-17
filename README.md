@@ -10,7 +10,7 @@ Supported providers:
 
 * [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
 * [Gigaset](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
-* [Fanvil](https://fdps.fanvil.com/)
+* Fanvil (a link to its public documentation was not found)
 * [Yealink](http://support.yealink.com/documentFront/forwardToDocumentDetailPage?documentId=257)
 
 ## APIs
