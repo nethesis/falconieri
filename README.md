@@ -1,13 +1,17 @@
 # Falconieri
 
-Remote Provisioning Gateway
+Modern IP phones can contact a redirect service provider at boot time
+and discover their PBX address with it.
+
+The Falconieri project is a RPS (Redirect and Provisioning Service) gateway 
+that helps to store the phone provisioning URL in the phone vendor redirect service.
 
 Supported providers:
 
-* [**Snom**](https://service.snom.com/display/wiki/XML-RPC+API)
-* [**Gigaset**](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
-* **Fanvil**
-* [**Yealink**](http://support.yealink.com/documentFront/forwardToDocumentDetailPage?documentId=257)
+* [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
+* [Gigaset](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
+* Fanvil (a link to its public documentation was not found)
+* [Yealink](http://support.yealink.com/documentFront/forwardToDocumentDetailPage?documentId=257)
 
 ## APIs
 
@@ -138,3 +142,7 @@ Example:
 * `YEALINK_PASSWORD` Password for access to Yealink provider
 * `YEALINK_RPC_URL` The URL for XML-RPC requests of Yealink provider
 * `YEALINK_DISABLE` Enable/Disable the provider, default `false`
+
+## Other projects
+
+[Tancredi](https://nethesis.github.io/tancredi/) is a phone provisioning engine ideal for internet deployments.
