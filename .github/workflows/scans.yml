@@ -1,0 +1,46 @@
+name: SBOM scans
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - published
+
+permissions:
+  actions: read
+  contents: write  
+  security-events: write
+
+jobs:
+  sbom:
+    name: SBOM
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'github'
+          output: 'dependency-results.sbom.json'
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+      - name: Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload report to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: 'trivy-results.sarif'
+          name: sarif-report
