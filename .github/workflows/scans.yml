@@ -12,6 +12,7 @@ permissions:
   actions: read
   contents: write  
   security-events: write
+  packages: write
 
 jobs:
   sbom:
@@ -35,7 +36,21 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload report to GitHub
+      - name: Upload
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
+      - name: Generate SBOM
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: cyclonedx
+          output: sbom.cdx.json
+      - name: Attach SBOM
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ github.ref_name }} sbom.cdx.json
