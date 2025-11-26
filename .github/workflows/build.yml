@@ -25,7 +25,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4.1.8
+      - uses: actions/download-artifact@v4.3.0
         id: download
         with:
           name: 'falconieri'
