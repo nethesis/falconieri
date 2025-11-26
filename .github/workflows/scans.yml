@@ -19,7 +19,7 @@ jobs:
     name: SBOM
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Generate
         uses: aquasecurity/trivy-action@0.28.0
         with:
