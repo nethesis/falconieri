@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
       - name: Install dependencies
         run: go get
       - name: Build Falconieri
