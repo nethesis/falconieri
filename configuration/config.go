@@ -41,12 +41,20 @@ type GigasetConf struct {
 	DisableCrc bool `json:"disable_crc"`
 }
 
+type YmcsConf struct {
+	Disable      bool   `json:"disable"`
+	BaseURL      string `json:"base_url"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
 type Configuration struct {
 	Providers struct {
 		Snom    ProviderConf `json:"snom"`
 		Gigaset GigasetConf  `json:"gigaset"`
 		Fanvil  ProviderConf `json:"fanvil"`
 		Yealink ProviderConf `json:"yealink"`
+		Ymcs    YmcsConf     `json:"ymcs"`
 	} `json: "providers"`
 }
 
@@ -183,5 +191,33 @@ func Init(ConfigFilePtr *string) {
 			Config.Providers.Yealink.RpcUrl == "") {
 
 		Config.Providers.Yealink.Disable = true
+	}
+
+	if os.Getenv("YMCS_BASE_URL") != "" {
+		Config.Providers.Ymcs.BaseURL = os.Getenv("YMCS_BASE_URL")
+	}
+
+	if os.Getenv("YMCS_CLIENT_ID") != "" {
+		Config.Providers.Ymcs.ClientID = os.Getenv("YMCS_CLIENT_ID")
+	}
+
+	if os.Getenv("YMCS_CLIENT_SECRET") != "" {
+		Config.Providers.Ymcs.ClientSecret = os.Getenv("YMCS_CLIENT_SECRET")
+	}
+
+	if os.Getenv("YMCS_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("YMCS_DISABLE"))
+		if err == nil {
+			Config.Providers.Ymcs.Disable = disable
+		}
+	}
+
+	if !Config.Providers.Ymcs.Disable &&
+		(Config.Providers.Ymcs.ClientID == "" ||
+			Config.Providers.Ymcs.ClientSecret == "" ||
+			Config.Providers.Ymcs.BaseURL == "") {
+
+		Config.Providers.Ymcs.Disable = true
 	}
 }
