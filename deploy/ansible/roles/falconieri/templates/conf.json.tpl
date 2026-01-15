@@ -24,6 +24,12 @@
       "password": "{{ fanvil_password }}",
       "rpc_url": "{{ fanvil_rpc_url }}",
       "disable": {{ fanvil_disable }}
+    },
+    "ymcs": {
+      "base_url": "{{ ymcs_base_url }}",
+      "client_id": "{{ ymcs_client_id }}",
+      "client_secret": "{{ ymcs_client_secret }}",
+      "disable": {{ ymcs_disable }}
     }
   }
 }
