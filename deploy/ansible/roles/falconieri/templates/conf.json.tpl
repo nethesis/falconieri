@@ -12,7 +12,7 @@
       "rpc_url": "{{ yealink_rpc_url }}",
       "disable": {{ yealink_disable }}
     },
-    "giagaset": {
+    "gigaset": {
       "user":"{{ gigaset_user }}",
       "password": "{{ gigaset_password }}",
       "rpc_url": "{{ gigaset_rpc_url }}",
