@@ -65,15 +65,18 @@ func ParseProviderError(message string) error {
 		return errors.New("malformed_url")
 
 	case message == "Error:malformed_mac", //snom
-		message == "Error: mac_format_error",         //fanvil
-		strings.HasPrefix(message, "mac_not_exist:"): //gigaset
+		message == "Error: mac_format_error",                             //fanvil
+		strings.HasPrefix(message, "mac_not_exist:"),                     //gigaset
+		strings.Contains(strings.ToLower(message), "device.mac.invalid"), // ymcs example errorInfo
+		message == "800001":                                              // ymcs error code: invalid MAC
 
 		return errors.New("not_valid_mac_address")
 
 	case message == "Error:owned_by_other_user", //snom
 		message == "Error: device_had_existed",                         //fanvil
 		strings.HasPrefix(message, "mac_already_in_use:"),              //gigaset
-		regexp.MustCompile(`^Error:[a-z0-9]{10}`).MatchString(message): //yealink
+		regexp.MustCompile(`^Error:[a-z0-9]{10}`).MatchString(message), //yealink
+		message == "800004": //ymcs
 
 		return errors.New("device_owned_by_other_user")
 
