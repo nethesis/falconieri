@@ -32,6 +32,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -44,6 +45,7 @@ type Client struct {
 	Debug        bool // Enable debug logging
 
 	// Token management
+	mu          sync.Mutex // Protects accessToken and tokenExpiry
 	accessToken string
 	tokenExpiry time.Time
 
