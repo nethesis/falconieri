@@ -22,3 +22,8 @@ fanvil_user: user
 fanvil_password: password
 fanvil_rpc_url: http://fdps.fanvil.com/xmlrpc.php
 fanvil_disable: "false"
+
+ymcs_base_url: https://eu-api.ymcs.yealink.com
+ymcs_client_id: client
+ymcs_client_secret: secret
+ymcs_disable: "false"
