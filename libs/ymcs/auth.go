@@ -38,6 +38,10 @@ import (
 // It uses the client credentials flow and automatically handles token caching
 // and refresh when the token expires.
 func (c *Client) GetAccessToken() (string, error) {
+	// serialized access to token cache
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	// Return cached token if still valid
 	if c.accessToken != "" && time.Now().Before(c.tokenExpiry) {
 		if c.Debug {
