@@ -76,7 +76,10 @@ func ParseProviderError(message string) error {
 		message == "Error: device_had_existed",                         //fanvil
 		strings.HasPrefix(message, "mac_already_in_use:"),              //gigaset
 		regexp.MustCompile(`^Error:[a-z0-9]{10}`).MatchString(message), //yealink
-		message == "800004": //ymcs
+		message == "800004", //ymcs
+		message == "800003", //ymcs: Resource already exists
+		strings.Contains(strings.ToLower(message), "device already managed"),
+		strings.Contains(strings.ToLower(message), "resource already exists"):
 
 		return errors.New("device_owned_by_other_user")
 
