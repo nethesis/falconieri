@@ -11,7 +11,8 @@ Supported providers:
 * [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
 * [Gigaset](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
 * Fanvil (a link to its public documentation was not found)
-* [Yealink](http://support.yealink.com/documentFront/forwardToDocumentDetailPage?documentId=257)
+* [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
+* [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
 
 ## APIs
 
@@ -43,13 +44,24 @@ Example:
 {"url":"https://example.com/"}
 ```
 #### Response
-The API return a HTTP status code `200` with an empty body in case of success
-or a json object in case of error.
-Json  object field:
+The API returns a HTTP status code `200` in case of success.
+
+For providers other than `ymcs`, the response body is empty.
+
+For the `ymcs` provider, the response body is a JSON object:
+* `device_pin`: a string PIN if returned by YMCS, otherwise `null`.
+
+In case of error, the API returns a JSON object.
+JSON object fields:
 * `error`: specific error code.
 * `message`: additional informations (optional).
 ##### 200
 The device was configured successfully
+
+YMCS response example:
+```json
+{"device_pin":"123456"}
+```
 
 ##### 400
 Errors codes:
@@ -105,6 +117,12 @@ Gigaset specific:
 
 * `disable_crc` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
 
+YMCS specific:
+
+* `base_url` YMCS API base URL, for example `https://eu-api.ymcs.yealink.com`
+* `client_id` OAuth client ID issued by Yealink
+* `client_secret` OAuth client secret issued by Yealink
+
 
 Example:
 
@@ -115,6 +133,12 @@ Example:
        "user":"user",
        "password": "password",
        "rpc_url": "https://secure-provisioning.snom.com:8083/xmlrpc/",
+       "disable": false
+     },
+     "ymcs": {
+       "base_url": "https://eu-api.ymcs.yealink.com",
+       "client_id": "your-client-id",
+       "client_secret": "your-client-secret",
        "disable": false
      }
 }
@@ -138,10 +162,15 @@ Example:
 * `FANVIL_RPC_URL` The URL for XML-RPC requests of Fanvil provider
 * `FANVIL_DISABLE` Enable/Disable the provider, default `false`
 
-* `YEALINK_USER` Username for access to Yealink provider
-* `YEALINK_PASSWORD` Password for access to Yealink provider
-* `YEALINK_RPC_URL` The URL for XML-RPC requests of Yealink provider
+* `YEALINK_USER` Username for access to Yealink legacy provider
+* `YEALINK_PASSWORD` Password for access to Yealink legacy provider
+* `YEALINK_RPC_URL` The URL for XML-RPC requests of Yealink legacy provider
 * `YEALINK_DISABLE` Enable/Disable the provider, default `false`
+
+* `YMCS_BASE_URL` YMCS API base URL, for example `https://eu-api.ymcs.yealink.com`
+* `YMCS_CLIENT_ID` OAuth client ID issued by Yealink
+* `YMCS_CLIENT_SECRET` OAuth client secret issued by Yealink
+* `YMCS_DISABLE` Enable/Disable the YMCS provider, default `false`
 
 ## Other projects
 
