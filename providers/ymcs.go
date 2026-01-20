@@ -106,7 +106,10 @@ func (s YmcsDevice) Register() error {
 func (s YmcsDevice) GetPIN() (string, error) {
 	client, err := getYmcsClient()
 	if err != nil {
-		return "", err
+		return "", models.ProviderError{
+			Message:      "provider_client_initialization_failed",
+			WrappedError: err,
+		}
 	}
 
 	return client.GetSingleDevicePIN(s.Mac)
