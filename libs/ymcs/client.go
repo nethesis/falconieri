@@ -28,9 +28,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -57,13 +59,33 @@ type Client struct {
 }
 
 // NewClient creates a new Yealink YMCS API client
-func NewClient(baseURL, clientID, clientSecret string) *Client {
+func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
+	// Validate input parameters
+	if strings.TrimSpace(baseURL) == "" {
+		return nil, errors.New("baseURL cannot be empty")
+	}
+	if strings.TrimSpace(clientID) == "" {
+		return nil, errors.New("clientID cannot be empty")
+	}
+	if strings.TrimSpace(clientSecret) == "" {
+		return nil, errors.New("clientSecret cannot be empty")
+	}
+
+	// Validate baseURL format
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid baseURL format: %w", err)
+	}
+	if parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return nil, errors.New("baseURL must include scheme (http/https) and host")
+	}
+
 	return &Client{
 		BaseURL:      strings.TrimSuffix(baseURL, "/"),
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		HTTPClient:   &http.Client{Timeout: 30 * time.Second},
-	}
+	}, nil
 }
 
 // getTimestamp returns current timestamp in milliseconds

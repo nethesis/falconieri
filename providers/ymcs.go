@@ -44,15 +44,26 @@ var (
 // This allows token caching to work effectively across multiple requests.
 // The client is created using configuration loaded at startup.
 // Errors during API calls are handled by the client's methods.
-func getYmcsClient() *ymcs.Client {
+func getYmcsClient() (*ymcs.Client, error) {
+	var clientErr error
 	ymcsClientOnce.Do(func() {
-		ymcsClient = ymcs.NewClient(
+		var err error
+		ymcsClient, err = ymcs.NewClient(
 			configuration.Config.Providers.Ymcs.BaseURL,
 			configuration.Config.Providers.Ymcs.ClientID,
 			configuration.Config.Providers.Ymcs.ClientSecret,
 		)
+		if err != nil {
+			clientErr = err
+		}
 	})
-	return ymcsClient
+	if clientErr != nil {
+		return nil, clientErr
+	}
+	if ymcsClient == nil {
+		return nil, errors.New("ymcs client initialization failed")
+	}
+	return ymcsClient, nil
 }
 
 type YmcsDevice struct {
@@ -61,10 +72,16 @@ type YmcsDevice struct {
 }
 
 func (s YmcsDevice) Register() error {
-	client := getYmcsClient()
+	client, err := getYmcsClient()
+	if err != nil {
+		return models.ProviderError{
+			Message:      "provider_client_initialization_failed",
+			WrappedError: err,
+		}
+	}
 
 	// Delete device first (if it exists) to ensure clean registration
-	_, err := client.DeleteDeviceByMAC(s.Mac)
+	_, err = client.DeleteDeviceByMAC(s.Mac)
 	if err != nil {
 		// Ignore deletion errors (device may not exist)
 		// Log but continue with registration
@@ -94,7 +111,10 @@ func (s YmcsDevice) Register() error {
 }
 
 func (s YmcsDevice) GetPIN() (string, error) {
-	client := getYmcsClient()
+	client, err := getYmcsClient()
+	if err != nil {
+		return "", err
+	}
 
 	return client.GetSingleDevicePIN(s.Mac)
 }
