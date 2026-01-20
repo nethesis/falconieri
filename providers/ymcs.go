@@ -42,6 +42,8 @@ var (
 
 // getYmcsClient returns a singleton YMCS client instance.
 // This allows token caching to work effectively across multiple requests.
+// The client is created using configuration loaded at startup.
+// Errors during API calls are handled by the client's methods.
 func getYmcsClient() *ymcs.Client {
 	ymcsClientOnce.Do(func() {
 		ymcsClient = ymcs.NewClient(
