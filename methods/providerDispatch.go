@@ -135,30 +135,10 @@ func ProviderDispatch(c *gin.Context) {
 
 		redirectUrl, _ := net_url.QueryUnescape(url)
 
-		deviceYMCS := providers.YmcsDevice{
+		device = providers.YmcsDevice{
 			Mac: mac.A0 + "-" + mac.A1 + "-" + mac.A2 + "-" + mac.A3 + "-" + mac.A4 + "-" + mac.A5,
 			Url: redirectUrl,
 		}
-
-		if err := deviceYMCS.Register(); err != nil {
-			if errors.Unwrap(err) != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(),
-					"message": errors.Unwrap(err).Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
-		}
-
-		pin, err := deviceYMCS.GetPIN()
-		if err != nil || pin == "" {
-			// PIN is optional: succeed even if the provider does not return it.
-			c.JSON(http.StatusOK, gin.H{"device_pin": nil})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"device_pin": pin})
-		return
 
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"error": "provider_not_supported"})
@@ -173,6 +153,18 @@ func ProviderDispatch(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
+		return
+	}
+
+	// Handle YMCS-specific PIN retrieval
+	if ymcsDevice, ok := device.(providers.YmcsDevice); ok {
+		pin, err := ymcsDevice.GetPIN()
+		if err != nil || pin == "" {
+			// PIN is optional: succeed even if the provider does not return it.
+			c.JSON(http.StatusOK, gin.H{"device_pin": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"device_pin": pin})
 		return
 	}
 
