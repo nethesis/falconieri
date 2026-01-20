@@ -61,14 +61,14 @@ type Client struct {
 // NewClient creates a new Yealink YMCS API client
 func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	// Validate input parameters
-	if strings.TrimSpace(baseURL) == "" {
-		return nil, errors.New("baseURL cannot be empty")
+	if err := validateNonEmpty(baseURL, "baseURL"); err != nil {
+		return nil, err
 	}
-	if strings.TrimSpace(clientID) == "" {
-		return nil, errors.New("clientID cannot be empty")
+	if err := validateNonEmpty(clientID, "clientID"); err != nil {
+		return nil, err
 	}
-	if strings.TrimSpace(clientSecret) == "" {
-		return nil, errors.New("clientSecret cannot be empty")
+	if err := validateNonEmpty(clientSecret, "clientSecret"); err != nil {
+		return nil, err
 	}
 
 	// Validate baseURL format
@@ -76,8 +76,11 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid baseURL format: %w", err)
 	}
-	if parsedURL.Scheme == "" || parsedURL.Host == "" {
-		return nil, errors.New("baseURL must include scheme (http/https) and host")
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return nil, errors.New("baseURL must use http or https scheme")
+	}
+	if parsedURL.Host == "" {
+		return nil, errors.New("baseURL must include a host")
 	}
 
 	return &Client{
@@ -86,6 +89,14 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 		ClientSecret: clientSecret,
 		HTTPClient:   &http.Client{Timeout: 30 * time.Second},
 	}, nil
+}
+
+// validateNonEmpty checks if a value is non-empty after trimming whitespace
+func validateNonEmpty(value, fieldName string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("%s cannot be empty", fieldName)
+	}
+	return nil
 }
 
 // getTimestamp returns current timestamp in milliseconds
