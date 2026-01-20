@@ -27,6 +27,7 @@ package providers
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/libs/ymcs"
@@ -34,17 +35,33 @@ import (
 	"github.com/nethesis/falconieri/utils"
 )
 
+var (
+	ymcsClient     *ymcs.Client
+	ymcsClientOnce sync.Once
+)
+
+// getYmcsClient returns a singleton YMCS client instance.
+// This allows token caching to work effectively across multiple requests.
+// The client is created using configuration loaded at startup.
+// Errors during API calls are handled by the client's methods.
+func getYmcsClient() *ymcs.Client {
+	ymcsClientOnce.Do(func() {
+		ymcsClient = ymcs.NewClient(
+			configuration.Config.Providers.Ymcs.BaseURL,
+			configuration.Config.Providers.Ymcs.ClientID,
+			configuration.Config.Providers.Ymcs.ClientSecret,
+		)
+	})
+	return ymcsClient
+}
+
 type YmcsDevice struct {
 	Mac string
 	Url string
 }
 
 func (s YmcsDevice) Register() error {
-	client := ymcs.NewClient(
-		configuration.Config.Providers.Ymcs.BaseURL,
-		configuration.Config.Providers.Ymcs.ClientID,
-		configuration.Config.Providers.Ymcs.ClientSecret,
-	)
+	client := getYmcsClient()
 
 	// Delete device first (if it exists) to ensure clean registration
 	_, err := client.DeleteDeviceByMAC(s.Mac)
@@ -77,11 +94,7 @@ func (s YmcsDevice) Register() error {
 }
 
 func (s YmcsDevice) GetPIN() (string, error) {
-	client := ymcs.NewClient(
-		configuration.Config.Providers.Ymcs.BaseURL,
-		configuration.Config.Providers.Ymcs.ClientID,
-		configuration.Config.Providers.Ymcs.ClientSecret,
-	)
+	client := getYmcsClient()
 
 	return client.GetSingleDevicePIN(s.Mac)
 }
