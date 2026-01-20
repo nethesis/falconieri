@@ -20,7 +20,7 @@
  * author: Matteo Valentini <matteo.valentini@nethesis.it>
  */
 
-// Package yealink provides a client for the Yealink YMCS API with OAuth 2.0 authentication
+// Package ymcs provides a client for the Yealink YMCS API with OAuth 2.0 authentication
 package ymcs
 
 import (
