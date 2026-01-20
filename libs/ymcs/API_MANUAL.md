@@ -176,6 +176,8 @@ client.Debug = true
 
 The client always stores the last request/response details in `LastRequest`, `LastRequestBody`, `LastResponse`, and `LastRespBody` (overwritten on every request). When `Debug` is enabled it also emits log messages for token usage and refresh.
 
+**Note on concurrent access**: These debug fields are protected by an internal mutex for thread-safe writes. If you need to read these fields while the client may be processing concurrent requests, you should copy the values immediately after the operation completes to avoid potential races.
+
 #### Custom HTTP Client
 
 Replace the default HTTP client with a custom one:

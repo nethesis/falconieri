@@ -86,8 +86,10 @@ func (c *Client) GetAccessToken() (string, error) {
 	req.Header.Set("nonce", nonce)
 
 	// Store request for debugging
+	c.debugMu.Lock()
 	c.LastRequest = req
 	c.LastRequestBody = string(jsonData)
+	c.debugMu.Unlock()
 
 	// Send request
 	resp, err := c.HTTPClient.Do(req)
@@ -97,14 +99,18 @@ func (c *Client) GetAccessToken() (string, error) {
 	defer resp.Body.Close()
 
 	// Store response for debugging
+	c.debugMu.Lock()
 	c.LastResponse = resp
+	c.debugMu.Unlock()
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
+	c.debugMu.Lock()
 	c.LastRespBody = string(respBody)
+	c.debugMu.Unlock()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", parseAPIError(resp.StatusCode, respBody)
