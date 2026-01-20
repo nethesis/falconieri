@@ -27,6 +27,7 @@ package providers
 
 import (
 	"errors"
+	"log"
 	"sync"
 
 	"github.com/nethesis/falconieri/configuration"
@@ -64,10 +65,13 @@ func (s YmcsDevice) Register() error {
 	client := getYmcsClient()
 
 	// Delete device first (if it exists) to ensure clean registration
+	log.Printf("[YMCS] Attempting to delete device with MAC %s before registration", s.Mac)
 	_, err := client.DeleteDeviceByMAC(s.Mac)
 	if err != nil {
 		// Ignore deletion errors (device may not exist)
-		// Log but continue with registration
+		log.Printf("[YMCS] Device deletion failed (MAC: %s): %v - continuing with registration", s.Mac, err)
+	} else {
+		log.Printf("[YMCS] Successfully deleted device with MAC %s", s.Mac)
 	}
 
 	resp, err := client.AddDeviceByMacSingle(s.Mac, &s.Url)
