@@ -37,6 +37,7 @@ import (
 
 var (
 	ymcsClient     *ymcs.Client
+	ymcsClientErr  error
 	ymcsClientOnce sync.Once
 )
 
@@ -45,23 +46,15 @@ var (
 // The client is created using configuration loaded at startup.
 // Errors during API calls are handled by the client's methods.
 func getYmcsClient() (*ymcs.Client, error) {
-	var clientErr error
 	ymcsClientOnce.Do(func() {
-		var err error
-		ymcsClient, err = ymcs.NewClient(
+		ymcsClient, ymcsClientErr = ymcs.NewClient(
 			configuration.Config.Providers.Ymcs.BaseURL,
 			configuration.Config.Providers.Ymcs.ClientID,
 			configuration.Config.Providers.Ymcs.ClientSecret,
 		)
-		if err != nil {
-			clientErr = err
-		}
 	})
-	if clientErr != nil {
-		return nil, clientErr
-	}
-	if ymcsClient == nil {
-		return nil, errors.New("ymcs client initialization failed")
+	if ymcsClientErr != nil {
+		return nil, ymcsClientErr
 	}
 	return ymcsClient, nil
 }
