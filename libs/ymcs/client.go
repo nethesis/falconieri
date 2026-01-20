@@ -50,6 +50,7 @@ type Client struct {
 	tokenExpiry time.Time
 
 	// Last request/response for debugging
+	debugMu         sync.Mutex // Protects debug fields below
 	LastRequest     *http.Request
 	LastRequestBody string
 	LastResponse    *http.Response
@@ -108,8 +109,10 @@ func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.R
 	}
 
 	// Store request for debugging
+	c.debugMu.Lock()
 	c.LastRequest = req
 	c.LastRequestBody = requestBodyStr
+	c.debugMu.Unlock()
 
 	// Add headers
 	nonce, err := c.getNonce()
@@ -130,14 +133,18 @@ func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.R
 	}
 
 	// Store response for debugging
+	c.debugMu.Lock()
 	c.LastResponse = resp
+	c.debugMu.Unlock()
 
 	// Read response body for logging
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
+	c.debugMu.Lock()
 	c.LastRespBody = string(bodyBytes)
+	c.debugMu.Unlock()
 
 	// Recreate response body reader
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
