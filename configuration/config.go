@@ -29,7 +29,7 @@ import (
 	"strconv"
 )
 
-type ProviderConf struct {
+type LegacyProviderConf struct {
 	Password string `json:"password"`
 	User     string `json:"user"`
 	RpcUrl   string `json:"rpc_url"`
@@ -37,11 +37,11 @@ type ProviderConf struct {
 }
 
 type GigasetConf struct {
-	ProviderConf
+	LegacyProviderConf
 	DisableCrc bool `json:"disable_crc"`
 }
 
-type YmcsConf struct {
+type ProviderConf struct {
 	Disable      bool   `json:"disable"`
 	BaseURL      string `json:"base_url"`
 	ClientID     string `json:"client_id"`
@@ -50,12 +50,12 @@ type YmcsConf struct {
 
 type Configuration struct {
 	Providers struct {
-		Snom    ProviderConf `json:"snom"`
-		Gigaset GigasetConf  `json:"gigaset"`
-		Fanvil  ProviderConf `json:"fanvil"`
-		Yealink ProviderConf `json:"yealink"`
-		Ymcs    YmcsConf     `json:"ymcs"`
-	} `json: "providers"`
+		Snom    LegacyProviderConf `json:"snom"`
+		Gigaset GigasetConf        `json:"gigaset"`
+		Fanvil  LegacyProviderConf `json:"fanvil"`
+		Yealink LegacyProviderConf `json:"yealink"`
+		Ymcs    ProviderConf       `json:"ymcs"`
+	} `json:"providers"`
 }
 
 var Config = Configuration{}
