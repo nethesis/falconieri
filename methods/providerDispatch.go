@@ -126,6 +126,7 @@ func ProviderDispatch(c *gin.Context) {
 			Override:   "1",
 		}
 
+
 	case (provider == "ymcs") && !configuration.Config.Providers.Ymcs.Disable:
 		mac, url, err := parseParams(c)
 		if err != nil {
@@ -140,6 +141,20 @@ func ProviderDispatch(c *gin.Context) {
 			Url: redirectUrl,
 		}
 
+
+	case (provider == "grape") && !configuration.Config.Providers.Grape.Disable:
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		redirectUrl, _ := net_url.QueryUnescape(url)
+
+		device = providers.GrapeDevice{
+			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
+			Url: redirectUrl,
+		}
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"error": "provider_not_supported"})
 		return

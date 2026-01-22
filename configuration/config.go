@@ -55,6 +55,7 @@ type Configuration struct {
 		Fanvil  LegacyProviderConf `json:"fanvil"`
 		Yealink LegacyProviderConf `json:"yealink"`
 		Ymcs    ProviderConf       `json:"ymcs"`
+		Grape   ProviderConf       `json:"grape"`
 	} `json:"providers"`
 }
 
@@ -219,5 +220,33 @@ func Init(ConfigFilePtr *string) {
 			Config.Providers.Ymcs.BaseURL == "") {
 
 		Config.Providers.Ymcs.Disable = true
+	}
+	// GRAPE provider configuration
+	if os.Getenv("GRAPE_CLIENT_ID") != "" {
+		Config.Providers.Grape.ClientID = os.Getenv("GRAPE_CLIENT_ID")
+	}
+
+	if os.Getenv("GRAPE_CLIENT_SECRET") != "" {
+		Config.Providers.Grape.ClientSecret = os.Getenv("GRAPE_CLIENT_SECRET")
+	}
+
+	if os.Getenv("GRAPE_BASE_URL") != "" {
+		Config.Providers.Grape.BaseURL = os.Getenv("GRAPE_BASE_URL")
+	}
+
+	if os.Getenv("GRAPE_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("GRAPE_DISABLE"))
+		if err == nil {
+			Config.Providers.Grape.Disable = disable
+		}
+	}
+
+	if !Config.Providers.Grape.Disable &&
+		(Config.Providers.Grape.ClientID == "" ||
+			Config.Providers.Grape.ClientSecret == "" ||
+			Config.Providers.Grape.BaseURL == "") {
+
+		Config.Providers.Grape.Disable = true
 	}
 }
