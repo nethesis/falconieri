@@ -30,6 +30,12 @@
       "client_id": "{{ ymcs_client_id }}",
       "client_secret": "{{ ymcs_client_secret }}",
       "disable": {{ ymcs_disable }}
+    },
+    "grape": {
+      "base_url": "{{ grape_base_url }}",
+      "client_id": "{{ grape_client_id }}",
+      "client_secret": "{{ grape_client_secret }}",
+      "disable": {{ grape_disable }}
     }
   }
 }
