@@ -13,6 +13,7 @@ Supported providers:
 * Fanvil (a link to its public documentation was not found)
 * [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
 * [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
+* [Grape (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
 
 ## APIs
 
@@ -117,12 +118,13 @@ Gigaset specific:
 
 * `disable_crc` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
 
-YMCS specific:
+YMCS and GRAPE specific:
 
-* `base_url` YMCS API base URL, for example `https://eu-api.ymcs.yealink.com`
-* `client_id` OAuth client ID issued by Yealink
-* `client_secret` OAuth client secret issued by Yealink
-
+* `base_url` API base URL, for example:
+  * `https://eu-api.ymcs.yealink.com` for YMCS provider
+  * `https://api.grape.gigaset.net/api/v1/` for Grape provider
+* `client_id` OAuth client ID
+* `client_secret` OAuth client secret
 
 Example:
 
@@ -140,7 +142,14 @@ Example:
        "client_id": "your-client-id",
        "client_secret": "your-client-secret",
        "disable": false
+     },
+     "grape": {
+       "base_url": "https://api.grape.gigaset.net/api/v1/",
+       "client_id": "your-client-id",
+       "client_secret": "your-client-secret",
+       "disable": false
      }
+  }
 }
 ```
 
@@ -171,6 +180,11 @@ Example:
 * `YMCS_CLIENT_ID` OAuth client ID issued by Yealink
 * `YMCS_CLIENT_SECRET` OAuth client secret issued by Yealink
 * `YMCS_DISABLE` Enable/Disable the YMCS provider, default `false`
+
+* `GRAPE_BASE_URL` Grape API base URL, for example `https://api.grape.gigaset.net/api/v1/`
+* `GRAPE_CLIENT_ID` OAuth client ID issued by Gigaset
+* `GRAPE_CLIENT_SECRET` OAuth client secret issued by Gigaset
+* `GRAPE_DISABLE` Enable/Disable the Grape provider, default `false`
 
 ## Other projects
 
