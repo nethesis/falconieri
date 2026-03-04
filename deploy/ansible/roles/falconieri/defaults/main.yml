@@ -27,3 +27,8 @@ ymcs_base_url: https://eu-api.ymcs.yealink.com
 ymcs_client_id: client
 ymcs_client_secret: secret
 ymcs_disable: "false"
+
+grape_base_url: https://api.grape.gigaset.net/api/v1/
+grape_client_id: client
+grape_client_secret: secret
+grape_disable: "false"
