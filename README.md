@@ -14,7 +14,7 @@ Supported providers:
 * [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
 * [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
 * [Grape (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
-* SRAPS (Secure Redirection and Provisioning Service) - SNOM provider using the same protocol as GRAPE
+* SRAPS (Secure Redirection and Provisioning Service) - SNOM provider using Hawk authentication with a simplified API structure
 
 ## APIs
 
