@@ -52,6 +52,12 @@ type Client struct {
 
 // NewClient creates a new Grape API client
 func NewClient(baseURL, clientID, clientSecret string) *Client {
+	// Normalize BaseURL to ensure it ends with a slash
+	// This prevents invalid URLs when concatenating endpoint paths
+	if !strings.HasSuffix(baseURL, "/") {
+		baseURL = baseURL + "/"
+	}
+
 	return &Client{
 		BaseURL:      baseURL,
 		ClientID:     clientID,
