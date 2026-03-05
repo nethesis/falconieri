@@ -38,12 +38,17 @@ type Client struct {
 	HTTPClient   *http.Client
 	Debug        bool
 
-	// Cached API navigation data (thread-safe)
-	mu                   sync.Mutex
-	provisioningServerID string
-	endpointsURL         string
+	// Cached API navigation data (thread-safe using sync.Once)
+	provisioningServerIDOnce sync.Once
+	provisioningServerID     string
+	provisioningServerIDErr  error
 
-	// Debug fields
+	endpointsURLOnce sync.Once
+	endpointsURL     string
+	endpointsURLErr  error
+
+	// Debug fields (protected by debugMu for thread safety)
+	debugMu         sync.Mutex
 	LastRequest     *http.Request
 	LastRequestBody string
 	LastResponse    *http.Response

@@ -169,10 +169,10 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 
 	// Store request for debugging
 	if c.Debug {
-		c.mu.Lock()
+		c.debugMu.Lock()
 		c.LastRequest = req
 		c.LastRequestBody = string(body)
-		c.mu.Unlock()
+		c.debugMu.Unlock()
 	}
 
 	resp, err := c.HTTPClient.Do(req)
@@ -188,10 +188,10 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 
 	// Store response for debugging
 	if c.Debug {
-		c.mu.Lock()
+		c.debugMu.Lock()
 		c.LastResponse = resp
 		c.LastRespBody = string(bodyBytes)
-		c.mu.Unlock()
+		c.debugMu.Unlock()
 	}
 
 	if resp.StatusCode >= 400 {

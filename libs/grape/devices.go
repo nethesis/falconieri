@@ -29,85 +29,76 @@ import (
 )
 
 // getProvisioningServerID retrieves and caches the ProvisioningServer UUID
+// Uses sync.Once to prevent duplicate API calls under concurrent load
 func (c *Client) getProvisioningServerID() (string, error) {
-	c.mu.Lock()
-	if c.provisioningServerID != "" {
-		id := c.provisioningServerID
-		c.mu.Unlock()
-		return id, nil
-	}
-	c.mu.Unlock()
-
-	// Get settings to find ProvisioningServer UUID
-	settingsURL := c.BaseURL + "settings/"
-	settings, err := c.makeHawkRequest("GET", settingsURL, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get settings: %w", err)
-	}
-
-	var settingsList []Setting
-	if err := json.Unmarshal(settings, &settingsList); err != nil {
-		return "", fmt.Errorf("failed to parse settings response: %w", err)
-	}
-
-	var settingProvisioningServerUUID string
-	for _, setting := range settingsList {
-		if setting.ParamName == "ProvisioningServer" {
-			settingProvisioningServerUUID = setting.UUID
-			break
+	c.provisioningServerIDOnce.Do(func() {
+		// Get settings to find ProvisioningServer UUID
+		settingsURL := c.BaseURL + "settings/"
+		settings, err := c.makeHawkRequest("GET", settingsURL, nil)
+		if err != nil {
+			c.provisioningServerIDErr = fmt.Errorf("failed to get settings: %w", err)
+			return
 		}
-	}
 
-	if settingProvisioningServerUUID == "" {
-		return "", errors.New("ProvisioningServer setting not found in API response")
-	}
+		var settingsList []Setting
+		if err := json.Unmarshal(settings, &settingsList); err != nil {
+			c.provisioningServerIDErr = fmt.Errorf("failed to parse settings response: %w", err)
+			return
+		}
 
-	// Cache the result
-	c.mu.Lock()
-	c.provisioningServerID = settingProvisioningServerUUID
-	c.mu.Unlock()
+		var settingProvisioningServerUUID string
+		for _, setting := range settingsList {
+			if setting.ParamName == "ProvisioningServer" {
+				settingProvisioningServerUUID = setting.UUID
+				break
+			}
+		}
 
-	return settingProvisioningServerUUID, nil
+		if settingProvisioningServerUUID == "" {
+			c.provisioningServerIDErr = errors.New("ProvisioningServer setting not found in API response")
+			return
+		}
+
+		c.provisioningServerID = settingProvisioningServerUUID
+	})
+
+	return c.provisioningServerID, c.provisioningServerIDErr
 }
 
 // getEndpointsURL retrieves and caches the endpoints URL for device operations
+// Uses sync.Once to prevent duplicate API calls under concurrent load
 func (c *Client) getEndpointsURL() (string, error) {
-	c.mu.Lock()
-	if c.endpointsURL != "" {
-		url := c.endpointsURL
-		c.mu.Unlock()
-		return url, nil
-	}
-	c.mu.Unlock()
+	c.endpointsURLOnce.Do(func() {
+		// Get company endpoints URL
+		tokenURL := c.BaseURL + "tokens/" + c.ClientID
+		tokenResp, err := c.makeHawkRequest("GET", tokenURL, nil)
+		if err != nil {
+			c.endpointsURLErr = fmt.Errorf("failed to get token info: %w", err)
+			return
+		}
 
-	// Get company endpoints URL
-	tokenURL := c.BaseURL + "tokens/" + c.ClientID
-	tokenResp, err := c.makeHawkRequest("GET", tokenURL, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get token info: %w", err)
-	}
+		var tokenData TokenResponse
+		if err := json.Unmarshal(tokenResp, &tokenData); err != nil {
+			c.endpointsURLErr = fmt.Errorf("failed to parse token response: %w", err)
+			return
+		}
 
-	var tokenData TokenResponse
-	if err := json.Unmarshal(tokenResp, &tokenData); err != nil {
-		return "", fmt.Errorf("failed to parse token response: %w", err)
-	}
+		companyResp, err := c.makeHawkRequest("GET", tokenData.Links.Company, nil)
+		if err != nil {
+			c.endpointsURLErr = fmt.Errorf("failed to get company info: %w", err)
+			return
+		}
 
-	companyResp, err := c.makeHawkRequest("GET", tokenData.Links.Company, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get company info: %w", err)
-	}
+		var companyData CompanyResponse
+		if err := json.Unmarshal(companyResp, &companyData); err != nil {
+			c.endpointsURLErr = fmt.Errorf("failed to parse company response: %w", err)
+			return
+		}
 
-	var companyData CompanyResponse
-	if err := json.Unmarshal(companyResp, &companyData); err != nil {
-		return "", fmt.Errorf("failed to parse company response: %w", err)
-	}
+		c.endpointsURL = companyData.Links.Endpoints
+	})
 
-	// Cache the result
-	c.mu.Lock()
-	c.endpointsURL = companyData.Links.Endpoints
-	c.mu.Unlock()
-
-	return companyData.Links.Endpoints, nil
+	return c.endpointsURL, c.endpointsURLErr
 }
 
 // RegisterDevice registers a device with the Grape provisioning server
