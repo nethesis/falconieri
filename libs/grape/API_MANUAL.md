@@ -301,6 +301,8 @@ Returns a formatted error message: `Grape API error (HTTP {code}): {message}`
 ### Checking for API Errors
 
 ```go
+import "errors"
+
 err := client.RegisterDevice(mac, url)
 if err != nil {
     var apiErr grape.APIError
