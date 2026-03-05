@@ -56,6 +56,7 @@ type Configuration struct {
 		Yealink LegacyProviderConf `json:"yealink"`
 		Ymcs    ProviderConf       `json:"ymcs"`
 		Grape   ProviderConf       `json:"grape"`
+		Sraps   ProviderConf       `json:"sraps"`
 	} `json:"providers"`
 }
 
@@ -248,5 +249,34 @@ func Init(ConfigFilePtr *string) {
 			Config.Providers.Grape.BaseURL == "") {
 
 		Config.Providers.Grape.Disable = true
+	}
+
+	// SRAPS provider configuration
+	if os.Getenv("SRAPS_CLIENT_ID") != "" {
+		Config.Providers.Sraps.ClientID = os.Getenv("SRAPS_CLIENT_ID")
+	}
+
+	if os.Getenv("SRAPS_CLIENT_SECRET") != "" {
+		Config.Providers.Sraps.ClientSecret = os.Getenv("SRAPS_CLIENT_SECRET")
+	}
+
+	if os.Getenv("SRAPS_BASE_URL") != "" {
+		Config.Providers.Sraps.BaseURL = os.Getenv("SRAPS_BASE_URL")
+	}
+
+	if os.Getenv("SRAPS_DISABLE") != "" {
+
+		disable, err := strconv.ParseBool(os.Getenv("SRAPS_DISABLE"))
+		if err == nil {
+			Config.Providers.Sraps.Disable = disable
+		}
+	}
+
+	if !Config.Providers.Sraps.Disable &&
+		(Config.Providers.Sraps.ClientID == "" ||
+			Config.Providers.Sraps.ClientSecret == "" ||
+			Config.Providers.Sraps.BaseURL == "") {
+
+		Config.Providers.Sraps.Disable = true
 	}
 }
