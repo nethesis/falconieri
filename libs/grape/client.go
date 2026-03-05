@@ -28,6 +28,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/singleflight"
 )
 
 // Client represents a Grape API client
@@ -42,6 +44,7 @@ type Client struct {
 	mu                   sync.Mutex
 	provisioningServerID string
 	endpointsURL         string
+	navGroup             singleflight.Group
 
 	// Debug fields
 	LastRequest     *http.Request
@@ -50,10 +53,20 @@ type Client struct {
 	LastRespBody    string
 }
 
+func normalizeBaseURL(baseURL string) string {
+	trimmed := strings.TrimSpace(baseURL)
+	if trimmed == "" {
+		return ""
+	}
+	return strings.TrimRight(trimmed, "/") + "/"
+}
+
 // NewClient creates a new Grape API client
 func NewClient(baseURL, clientID, clientSecret string) *Client {
+	normalizedBaseURL := normalizeBaseURL(baseURL)
+
 	return &Client{
-		BaseURL:      baseURL,
+		BaseURL:      normalizedBaseURL,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		HTTPClient: &http.Client{

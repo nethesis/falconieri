@@ -45,9 +45,9 @@ The library abstracts the following Grape API endpoints:
 
 - **Package Name**: `grape`
 - **Import Path**: `github.com/nethesis/falconieri/libs/grape`
-- **Go Version**: 1.17 or higher
+- **Minimum Go Version**: As specified in this repository's `go.mod` file
 - **Authentication**: Hawk (HMAC-based)
-- **No External Dependencies**: Uses only Go standard library
+- **Dependencies**: Go standard library plus `golang.org/x/sync/singleflight`
 
 ---
 
@@ -303,14 +303,19 @@ Returns a formatted error message: `Grape API error (HTTP {code}): {message}`
 ```go
 err := client.RegisterDevice(mac, url)
 if err != nil {
-    if apiErr, ok := err.(grape.APIError); ok {
+    var apiErr grape.APIError
+    if errors.As(err, &apiErr) {
         fmt.Printf("API Error: HTTP %d - %s\n", apiErr.StatusCode, apiErr.Message)
         fmt.Printf("Raw Response: %s\n", apiErr.Body)
-    } else {
-        fmt.Printf("Other Error: %v\n", err)
+        return
     }
+
+    fmt.Printf("Other Error: %v\n", err)
 }
 ```
+
+HTTP errors are returned as `APIError` values (they may be wrapped by the caller); use `errors.As` to check for them so you can still access status codes and the raw response body.
+Be sure to import the standard library `errors` package when using `errors.As`.
 
 ### Common Error Scenarios
 

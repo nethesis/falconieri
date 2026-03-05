@@ -181,7 +181,10 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
 
 	// Store response for debugging
 	if c.Debug {
@@ -192,7 +195,7 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, resp.Status)
+		return nil, parseErrorResponse(resp.StatusCode, resp.Status, bodyBytes)
 	}
 
 	return bodyBytes, nil

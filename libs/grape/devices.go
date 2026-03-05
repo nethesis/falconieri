@@ -30,84 +30,108 @@ import (
 
 // getProvisioningServerID retrieves and caches the ProvisioningServer UUID
 func (c *Client) getProvisioningServerID() (string, error) {
-	c.mu.Lock()
-	if c.provisioningServerID != "" {
-		id := c.provisioningServerID
-		c.mu.Unlock()
-		return id, nil
-	}
-	c.mu.Unlock()
-
-	// Get settings to find ProvisioningServer UUID
-	settingsURL := c.BaseURL + "settings/"
-	settings, err := c.makeHawkRequest("GET", settingsURL, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get settings: %w", err)
-	}
-
-	var settingsList []Setting
-	if err := json.Unmarshal(settings, &settingsList); err != nil {
-		return "", fmt.Errorf("failed to parse settings response: %w", err)
-	}
-
-	var settingProvisioningServerUUID string
-	for _, setting := range settingsList {
-		if setting.ParamName == "ProvisioningServer" {
-			settingProvisioningServerUUID = setting.UUID
-			break
+	result, err, _ := c.navGroup.Do("provisioningServerID", func() (interface{}, error) {
+		c.mu.Lock()
+		if c.provisioningServerID != "" {
+			id := c.provisioningServerID
+			c.mu.Unlock()
+			return id, nil
 		}
+		c.mu.Unlock()
+
+		// Get settings to find ProvisioningServer UUID
+		settingsURL := c.BaseURL + "settings/"
+		settings, err := c.makeHawkRequest("GET", settingsURL, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to get settings: %w", err)
+		}
+
+		var settingsList []Setting
+		if err := json.Unmarshal(settings, &settingsList); err != nil {
+			return "", fmt.Errorf("failed to parse settings response: %w", err)
+		}
+
+		var settingProvisioningServerUUID string
+		for _, setting := range settingsList {
+			if setting.ParamName == "ProvisioningServer" {
+				settingProvisioningServerUUID = setting.UUID
+				break
+			}
+		}
+
+		if settingProvisioningServerUUID == "" {
+			return "", errors.New("ProvisioningServer setting not found in API response")
+		}
+
+		// Cache the result
+		c.mu.Lock()
+		c.provisioningServerID = settingProvisioningServerUUID
+		c.mu.Unlock()
+
+		return settingProvisioningServerUUID, nil
+	})
+	if err != nil {
+		return "", err
 	}
 
-	if settingProvisioningServerUUID == "" {
-		return "", errors.New("ProvisioningServer setting not found in API response")
+	id, ok := result.(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected provisioning server cache type %T", result)
 	}
 
-	// Cache the result
-	c.mu.Lock()
-	c.provisioningServerID = settingProvisioningServerUUID
-	c.mu.Unlock()
-
-	return settingProvisioningServerUUID, nil
+	return id, nil
 }
 
 // getEndpointsURL retrieves and caches the endpoints URL for device operations
 func (c *Client) getEndpointsURL() (string, error) {
-	c.mu.Lock()
-	if c.endpointsURL != "" {
-		url := c.endpointsURL
+	result, err, _ := c.navGroup.Do("endpointsURL", func() (interface{}, error) {
+		c.mu.Lock()
+		if c.endpointsURL != "" {
+			url := c.endpointsURL
+			c.mu.Unlock()
+			return url, nil
+		}
 		c.mu.Unlock()
-		return url, nil
-	}
-	c.mu.Unlock()
 
-	// Get company endpoints URL
-	tokenURL := c.BaseURL + "tokens/" + c.ClientID
-	tokenResp, err := c.makeHawkRequest("GET", tokenURL, nil)
+		// Get company endpoints URL
+		tokenURL := c.BaseURL + "tokens/" + c.ClientID
+		tokenResp, err := c.makeHawkRequest("GET", tokenURL, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to get token info: %w", err)
+		}
+
+		var tokenData TokenResponse
+		if err := json.Unmarshal(tokenResp, &tokenData); err != nil {
+			return "", fmt.Errorf("failed to parse token response: %w", err)
+		}
+
+		companyResp, err := c.makeHawkRequest("GET", tokenData.Links.Company, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to get company info: %w", err)
+		}
+
+		var companyData CompanyResponse
+		if err := json.Unmarshal(companyResp, &companyData); err != nil {
+			return "", fmt.Errorf("failed to parse company response: %w", err)
+		}
+
+		// Cache the result
+		c.mu.Lock()
+		c.endpointsURL = companyData.Links.Endpoints
+		c.mu.Unlock()
+
+		return companyData.Links.Endpoints, nil
+	})
 	if err != nil {
-		return "", fmt.Errorf("failed to get token info: %w", err)
+		return "", err
 	}
 
-	var tokenData TokenResponse
-	if err := json.Unmarshal(tokenResp, &tokenData); err != nil {
-		return "", fmt.Errorf("failed to parse token response: %w", err)
+	url, ok := result.(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected endpoints cache type %T", result)
 	}
 
-	companyResp, err := c.makeHawkRequest("GET", tokenData.Links.Company, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get company info: %w", err)
-	}
-
-	var companyData CompanyResponse
-	if err := json.Unmarshal(companyResp, &companyData); err != nil {
-		return "", fmt.Errorf("failed to parse company response: %w", err)
-	}
-
-	// Cache the result
-	c.mu.Lock()
-	c.endpointsURL = companyData.Links.Endpoints
-	c.mu.Unlock()
-
-	return companyData.Links.Endpoints, nil
+	return url, nil
 }
 
 // RegisterDevice registers a device with the Grape provisioning server
@@ -131,9 +155,9 @@ func (c *Client) RegisterDevice(mac, provisioningURL string) error {
 
 	// Add device
 	deviceData := DeviceData{
-		MAC:                        normalizedMAC,
-		AutoprovisioningEnabled:    true,
-		WarrantyExpWarningPeriod:   nil,
+		MAC:                      normalizedMAC,
+		AutoprovisioningEnabled:  true,
+		WarrantyExpWarningPeriod: nil,
 		SettingsManager: map[string]map[string]interface{}{
 			settingProvisioningServerUUID: {
 				"value": provisioningURL,

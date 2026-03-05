@@ -26,6 +26,8 @@
 package providers
 
 import (
+	"errors"
+	"net"
 	"sync"
 
 	"github.com/nethesis/falconieri/configuration"
@@ -62,8 +64,24 @@ func (d GrapeDevice) Register() error {
 
 	err := client.RegisterDevice(d.Mac, d.Url)
 	if err != nil {
+		var apiErr grape.APIError
+		if errors.As(err, &apiErr) {
+			return models.ProviderError{
+				Message:      "provider_remote_call_failed",
+				WrappedError: err,
+			}
+		}
+
+		var netErr net.Error
+		if errors.As(err, &netErr) {
+			return models.ProviderError{
+				Message:      "connection_to_remote_provider_failed",
+				WrappedError: err,
+			}
+		}
+
 		return models.ProviderError{
-			Message:      "connection_to_remote_provider_failed",
+			Message:      "provider_remote_call_failed",
 			WrappedError: err,
 		}
 	}
