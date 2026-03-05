@@ -192,7 +192,7 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, resp.Status)
+		return nil, parseErrorResponse(resp.StatusCode, resp.Status, bodyBytes)
 	}
 
 	return bodyBytes, nil

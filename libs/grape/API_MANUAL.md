@@ -303,7 +303,8 @@ Returns a formatted error message: `Grape API error (HTTP {code}): {message}`
 ```go
 err := client.RegisterDevice(mac, url)
 if err != nil {
-    if apiErr, ok := err.(grape.APIError); ok {
+    var apiErr grape.APIError
+    if errors.As(err, &apiErr) {
         fmt.Printf("API Error: HTTP %d - %s\n", apiErr.StatusCode, apiErr.Message)
         fmt.Printf("Raw Response: %s\n", apiErr.Body)
     } else {
