@@ -26,6 +26,9 @@
 package providers
 
 import (
+	"errors"
+	"net"
+	"net/url"
 	"sync"
 
 	"github.com/nethesis/falconieri/configuration"
@@ -62,10 +65,32 @@ func (d GrapeDevice) Register() error {
 
 	err := client.RegisterDevice(d.Mac, d.Url)
 	if err != nil {
-		return models.ProviderError{
-			Message:      "connection_to_remote_provider_failed",
-			WrappedError: err,
+		// Check if this is an API error (4xx/5xx from server)
+		var apiErr grape.APIError
+		if errors.As(err, &apiErr) {
+			// Return API error directly so caller can inspect status/message
+			return apiErr
 		}
+
+		// Check if this is a transport-level error (DNS, connection, timeout)
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return models.ProviderError{
+				Message:      "connection_to_remote_provider_failed",
+				WrappedError: err,
+			}
+		}
+
+		var netErr net.Error
+		if errors.As(err, &netErr) {
+			return models.ProviderError{
+				Message:      "connection_to_remote_provider_failed",
+				WrappedError: err,
+			}
+		}
+
+		// Other errors (JSON marshaling, etc.) - return as-is
+		return err
 	}
 
 	return nil
