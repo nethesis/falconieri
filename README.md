@@ -123,8 +123,8 @@ YMCS and GRAPE specific:
 * `base_url` API base URL, for example:
   * `https://eu-api.ymcs.yealink.com` for YMCS provider
   * `https://api.grape.gigaset.net/api/v1/` for Grape provider
-* `client_id` OAuth client ID
-* `client_secret` OAuth client secret
+* `client_id` Client ID
+* `client_secret` Client secret/key
 
 Example:
 
@@ -182,8 +182,8 @@ Example:
 * `YMCS_DISABLE` Enable/Disable the YMCS provider, default `false`
 
 * `GRAPE_BASE_URL` Grape API base URL, for example `https://api.grape.gigaset.net/api/v1/`
-* `GRAPE_CLIENT_ID` OAuth client ID issued by Gigaset
-* `GRAPE_CLIENT_SECRET` OAuth client secret issued by Gigaset
+* `GRAPE_CLIENT_ID` Hawk id issued by Gigaset for HMAC authentication
+* `GRAPE_CLIENT_SECRET` Hawk key issued by Gigaset for HMAC authentication
 * `GRAPE_DISABLE` Enable/Disable the Grape provider, default `false`
 
 ## Other projects
