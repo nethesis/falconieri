@@ -36,6 +36,12 @@
       "client_id": "{{ grape_client_id }}",
       "client_secret": "{{ grape_client_secret }}",
       "disable": {{ grape_disable }}
+    },
+    "sraps": {
+      "base_url": "{{ sraps_base_url }}",
+      "client_id": "{{ sraps_client_id }}",
+      "client_secret": "{{ sraps_client_secret }}",
+      "disable": {{ sraps_disable }}
     }
   }
 }

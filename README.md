@@ -14,6 +14,7 @@ Supported providers:
 * [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
 * [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
 * [Grape (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
+* SRAPS (Secure Redirection and Provisioning Service) - SNOM provider using the same protocol as GRAPE
 
 ## APIs
 
@@ -118,11 +119,12 @@ Gigaset specific:
 
 * `disable_crc` If set to `true` Falconieri don't send the mac address's CRC code, default `false`
 
-YMCS and GRAPE specific:
+YMCS, GRAPE and SRAPS specific:
 
 * `base_url` API base URL, for example:
   * `https://eu-api.ymcs.yealink.com` for YMCS provider
-  * `https://api.grape.gigaset.net/api/v1/` for Grape provider
+  * `https://api.grape.gigaset.net/api/v1/` for GRAPE provider
+  * `https://api.sraps.snom.com/api/v1/` for SRAPS provider
 * `client_id` Client ID
 * `client_secret` Client secret/key
 
@@ -145,6 +147,12 @@ Example:
      },
      "grape": {
        "base_url": "https://api.grape.gigaset.net/api/v1/",
+       "client_id": "your-client-id",
+       "client_secret": "your-client-secret",
+       "disable": false
+     },
+     "sraps": {
+       "base_url": "https://api.sraps.snom.com/api/v1/",
        "client_id": "your-client-id",
        "client_secret": "your-client-secret",
        "disable": false
@@ -185,6 +193,11 @@ Example:
 * `GRAPE_CLIENT_ID` Hawk id issued by Gigaset for HMAC authentication
 * `GRAPE_CLIENT_SECRET` Hawk key issued by Gigaset for HMAC authentication
 * `GRAPE_DISABLE` Enable/Disable the Grape provider, default `false`
+
+* `SRAPS_BASE_URL` SRAPS API base URL, for example `https://api.sraps.snom.com/api/v1/`
+* `SRAPS_CLIENT_ID` Hawk id issued by SNOM for HMAC authentication
+* `SRAPS_CLIENT_SECRET` Hawk key issued by SNOM for HMAC authentication
+* `SRAPS_DISABLE` Enable/Disable the SRAPS provider, default `false`
 
 ## Other projects
 
