@@ -6,15 +6,18 @@ and discover their PBX address with it.
 The Falconieri project is a RPS (Redirect and Provisioning Service) gateway 
 that helps to store the phone provisioning URL in the phone vendor redirect service.
 
-Supported providers:
+**Supported providers**
 
-* [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
-* [Gigaset (legacy provider)](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
-* Fanvil (a link to its public documentation was not found)
-* [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
-* [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
-* [GRAPE (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
-* [SRAPS (Secure Redirection and Provisioning Service)](https://sraps.snom.com/documentation) - Snom provisioning platform, uses the same protocol as Grape
+- Legacy providers XML-RPC based:
+  * [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
+  * [Gigaset](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
+  * [Yealink](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
+  * Fanvil (a link to its public documentation was not found)
+
+- New providers REST API based:
+  * [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
+  * [GRAPE (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
+  * [SRAPS (Secure Redirection and Provisioning Service)](https://sraps.snom.com/documentation) - Snom provisioning platform, uses the same protocol as Grape
 
 ## APIs
 
