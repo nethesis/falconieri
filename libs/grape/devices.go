@@ -24,15 +24,16 @@ package grape
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
-// getProvisioningServerID retrieves and caches the ProvisioningServer UUID
-// Uses sync.Once to prevent duplicate API calls under concurrent load
+// getProvisioningServerID retrieves and caches the provisioning setting UUID.
+// The setting name is determined by c.ProvisioningSettingName (e.g.
+// "ProvisioningServer" for Grape, "setting_server" for SRAPS).
+// Uses sync.Once to prevent duplicate API calls under concurrent load.
 func (c *Client) getProvisioningServerID() (string, error) {
 	c.provisioningServerIDOnce.Do(func() {
-		// Get settings to find ProvisioningServer UUID
+		// Get settings to find the provisioning setting UUID
 		settingsURL := c.BaseURL + "settings/"
 		settings, err := c.makeHawkRequest("GET", settingsURL, nil)
 		if err != nil {
@@ -48,14 +49,14 @@ func (c *Client) getProvisioningServerID() (string, error) {
 
 		var settingProvisioningServerUUID string
 		for _, setting := range settingsList {
-			if setting.ParamName == "ProvisioningServer" {
+			if setting.ParamName == c.ProvisioningSettingName {
 				settingProvisioningServerUUID = setting.UUID
 				break
 			}
 		}
 
 		if settingProvisioningServerUUID == "" {
-			c.provisioningServerIDErr = errors.New("ProvisioningServer setting not found in API response")
+			c.provisioningServerIDErr = fmt.Errorf("%s setting not found in API response", c.ProvisioningSettingName)
 			return
 		}
 

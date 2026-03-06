@@ -38,6 +38,10 @@ type Client struct {
 	HTTPClient   *http.Client
 	Debug        bool
 
+	// ProvisioningSettingName is the param_name to search for in the settings list.
+	// Defaults to "ProvisioningServer" (Grape). SRAPS uses "setting_server".
+	ProvisioningSettingName string
+
 	// Cached API navigation data (thread-safe using sync.Once)
 	provisioningServerIDOnce sync.Once
 	provisioningServerID     string
@@ -64,9 +68,10 @@ func NewClient(baseURL, clientID, clientSecret string) *Client {
 	}
 
 	return &Client{
-		BaseURL:      baseURL,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		BaseURL:                 baseURL,
+		ClientID:                clientID,
+		ClientSecret:            clientSecret,
+		ProvisioningSettingName: "ProvisioningServer",
 		HTTPClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
