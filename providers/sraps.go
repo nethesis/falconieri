@@ -21,7 +21,8 @@
  */
 
 /*
- * GRAPE provisioning provider
+ * SRAPS (Secure Redirection and Provisioning Service) provider
+ * Reuses the grape library with a different base URL
  */
 package providers
 
@@ -37,35 +38,35 @@ import (
 )
 
 var (
-	grapeClient     *grape.Client
-	grapeClientOnce sync.Once
+	srapsClient     *grape.Client
+	srapsClientOnce sync.Once
 )
 
-// getGrapeClient returns a singleton GRAPE client instance.
-// This allows API navigation caching to work effectively across multiple requests.
-// The client is created using configuration loaded at startup.
-func getGrapeClient() *grape.Client {
-	grapeClientOnce.Do(func() {
-		grapeClient = grape.NewClient(
-			configuration.Config.Providers.Grape.BaseURL,
-			configuration.Config.Providers.Grape.ClientID,
-			configuration.Config.Providers.Grape.ClientSecret,
+// getSrapsClient returns a singleton SRAPS client instance.
+// SRAPS uses the same protocol as Grape but with a different base URL
+// and uses "setting_server" instead of "ProvisioningServer" for the setting name.
+func getSrapsClient() *grape.Client {
+	srapsClientOnce.Do(func() {
+		srapsClient = grape.NewClient(
+			configuration.Config.Providers.Sraps.BaseURL,
+			configuration.Config.Providers.Sraps.ClientID,
+			configuration.Config.Providers.Sraps.ClientSecret,
 		)
+		srapsClient.ProvisioningSettingName = "setting_server"
 	})
-	return grapeClient
+	return srapsClient
 }
 
-type GrapeDevice struct {
+type SrapsDevice struct {
 	Mac string
 	Url string
 }
 
-func (d GrapeDevice) Register() error {
-	client := getGrapeClient()
+func (d SrapsDevice) Register() error {
+	client := getSrapsClient()
 
 	err := client.RegisterDevice(d.Mac, d.Url)
 	if err != nil {
-		// Check if this is an API error (4xx/5xx from server)
 		var apiErr grape.APIError
 		if errors.As(err, &apiErr) {
 			return models.ProviderError{
@@ -74,7 +75,6 @@ func (d GrapeDevice) Register() error {
 			}
 		}
 
-		// Check if this is a transport-level error (DNS, connection, timeout)
 		var urlErr *url.Error
 		if errors.As(err, &urlErr) {
 			return models.ProviderError{
@@ -91,7 +91,6 @@ func (d GrapeDevice) Register() error {
 			}
 		}
 
-		// Other errors (JSON marshaling, etc.) - return as-is
 		return err
 	}
 
