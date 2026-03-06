@@ -32,3 +32,8 @@ grape_base_url: https://api.grape.gigaset.net/api/v1/
 grape_client_id: client
 grape_client_secret: secret
 grape_disable: "false"
+
+sraps_base_url: https://api.sraps.snom.com/api/v1/
+sraps_client_id: client
+sraps_client_secret: secret
+sraps_disable: "false"
