@@ -155,6 +155,20 @@ func ProviderDispatch(c *gin.Context) {
 			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
 			Url: redirectUrl,
 		}
+
+	case (provider == "sraps") && !configuration.Config.Providers.Sraps.Disable:
+		mac, url, err := parseParams(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		redirectUrl, _ := net_url.QueryUnescape(url)
+
+		device = providers.SrapsDevice{
+			Mac: mac.A0 + mac.A1 + mac.A2 + mac.A3 + mac.A4 + mac.A5,
+			Url: redirectUrl,
+		}
 	default:
 		c.JSON(http.StatusNotFound, gin.H{"error": "provider_not_supported"})
 		return
