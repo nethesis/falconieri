@@ -1,4 +1,4 @@
-# Grape Provisioning API Client Library - Technical Manual
+# GRAPE Provisioning API Client Library - Technical Manual
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@
 
 ## Introduction
 
-The Grape Provisioning API Client Library provides a comprehensive Go interface for interacting with the Grape provisioning service API. This library implements Hawk HTTP authentication (HMAC-based) and offers device management operations with automatic API navigation and caching.
+The GRAPE Provisioning API Client Library provides a comprehensive Go interface for interacting with the GRAPE provisioning service API. This library implements Hawk HTTP authentication (HMAC-based) and offers device management operations with automatic API navigation and caching.
 
 ### Key Features
 
@@ -32,7 +32,7 @@ The Grape Provisioning API Client Library provides a comprehensive Go interface 
 
 ### API Endpoints Reference
 
-The library abstracts the following Grape API endpoints:
+The library abstracts the following GRAPE API endpoints:
 
 | Operation | Endpoint | HTTP Method | Library Method |
 |-----------|----------|-------------|----------------|
@@ -88,7 +88,7 @@ libs/grape/
 ├── client.go        # Core client implementation and MAC normalization
 ├── auth.go          # Hawk authentication (nonce, MAC, signatures)
 ├── devices.go       # Device management operations
-├── errors.go        # Grape API error parsing and structured error type
+├── errors.go        # GRAPE API error parsing and structured error type
 ├── types.go         # Data type definitions
 └── API_MANUAL.md    # This documentation file
 ```
@@ -141,7 +141,7 @@ fmt.Printf("Last Response Body: %s\n", client.LastRespBody)
 
 ### Hawk HTTP Authentication
 
-The Grape API uses Hawk authentication, an HMAC-based HTTP authentication scheme. The library handles all authentication details automatically.
+The GRAPE API uses Hawk authentication, an HMAC-based HTTP authentication scheme. The library handles all authentication details automatically.
 
 #### Hawk Authentication Flow
 
@@ -175,7 +175,7 @@ All API requests are automatically authenticated using Hawk. No manual token man
 
 ### Register Device
 
-Register a device with the Grape provisioning server.
+Register a device with the GRAPE provisioning server.
 
 #### Method Signature
 
@@ -228,7 +228,7 @@ These values are cached per client instance for improved performance. Subsequent
 
 ### Setting
 
-Represents a configuration setting in the Grape API.
+Represents a configuration setting in the GRAPE API.
 
 ```go
 type Setting struct {
@@ -296,7 +296,7 @@ type APIError struct {
 func (e APIError) Error() string
 ```
 
-Returns a formatted error message: `Grape API error (HTTP {code}): {message}`
+Returns a formatted error message: `GRAPE API error (HTTP {code}): {message}`
 
 ### Checking for API Errors
 
@@ -320,7 +320,7 @@ if err != nil {
 - **401 Unauthorized**: Invalid client credentials
 - **404 Not Found**: Device or endpoint not found
 - **400 Bad Request**: Invalid MAC address or parameters
-- **500 Internal Server Error**: Grape API server error
+- **500 Internal Server Error**: GRAPE API server error
 
 ---
 
@@ -651,7 +651,7 @@ The client is thread-safe, but create only one instance per application for opti
 ### Device Not Found (404)
 
 - Verify the device MAC address is correct
-- Ensure the device exists in the Grape system
+- Ensure the device exists in the GRAPE system
 - Check API navigation endpoints are accessible
 
 ### Invalid Request (400)
@@ -662,7 +662,7 @@ The client is thread-safe, but create only one instance per application for opti
 
 ### Network Errors
 
-- Check network connectivity to Grape API
+- Check network connectivity to GRAPE API
 - Verify base URL is correct and accessible
 - Ensure no firewall blocking HTTP/HTTPS traffic
 - Consider increasing timeout for slow networks

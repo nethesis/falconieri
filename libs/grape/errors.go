@@ -27,7 +27,7 @@ import (
 	"fmt"
 )
 
-// APIError represents an error response from the Grape API
+// APIError represents an error response from the GRAPE API
 type APIError struct {
 	StatusCode int
 	Status     string
@@ -38,9 +38,9 @@ type APIError struct {
 // Error implements the error interface
 func (e APIError) Error() string {
 	if e.Message != "" {
-		return fmt.Sprintf("Grape API error (HTTP %d): %s", e.StatusCode, e.Message)
+		return fmt.Sprintf("GRAPE API error (HTTP %d): %s", e.StatusCode, e.Message)
 	}
-	return fmt.Sprintf("Grape API error (HTTP %d): %s", e.StatusCode, e.Status)
+	return fmt.Sprintf("GRAPE API error (HTTP %d): %s", e.StatusCode, e.Status)
 }
 
 // parseErrorResponse attempts to extract error information from the response body

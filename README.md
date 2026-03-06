@@ -9,11 +9,11 @@ that helps to store the phone provisioning URL in the phone vendor redirect serv
 Supported providers:
 
 * [Snom](https://service.snom.com/display/wiki/XML-RPC+API)
-* [Gigaset](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
+* [Gigaset (legacy provider)](https://teamwork.gigaset.com/gigawiki/display/GPPPO/Gigaset+Redirect+server)
 * Fanvil (a link to its public documentation was not found)
 * [Yealink (legacy provider)](https://support-cdn.yealink.com/attachment/upload/attachment/2019-1-8/5/b6a08cc4-0d6c-4def-b2f4-224b9653c051/Yealink+XML+API+for+RPS-V1.6-ENG.pdf)
 * [YMCS (Yealink Management Cloud Service V4X)](https://support.yealink.com/document-detail/c0966bbacb51405397c55290c2925f65) To use the YMCS provider, you need to ask Yealink to enable `/v2/rps/addDevicesByMac` endpoint for your account.
-* [Grape (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
+* [GRAPE (Gigaset Redirect and Provisioning Environment)](https://teamwork.gigaset.com/gigawiki/pages/viewpage.action?pageId=1535868981)
 
 ## APIs
 
@@ -122,7 +122,7 @@ YMCS and GRAPE specific:
 
 * `base_url` API base URL, for example:
   * `https://eu-api.ymcs.yealink.com` for YMCS provider
-  * `https://api.grape.gigaset.net/api/v1/` for Grape provider
+  * `https://api.grape.gigaset.net/api/v1/` for GRAPE provider
 * `client_id` Client ID
 * `client_secret` Client secret/key
 
@@ -181,10 +181,10 @@ Example:
 * `YMCS_CLIENT_SECRET` OAuth client secret issued by Yealink
 * `YMCS_DISABLE` Enable/Disable the YMCS provider, default `false`
 
-* `GRAPE_BASE_URL` Grape API base URL, for example `https://api.grape.gigaset.net/api/v1/`
+* `GRAPE_BASE_URL` GRAPE API base URL, for example `https://api.grape.gigaset.net/api/v1/`
 * `GRAPE_CLIENT_ID` Hawk id issued by Gigaset for HMAC authentication
 * `GRAPE_CLIENT_SECRET` Hawk key issued by Gigaset for HMAC authentication
-* `GRAPE_DISABLE` Enable/Disable the Grape provider, default `false`
+* `GRAPE_DISABLE` Enable/Disable the GRAPE provider, default `false`
 
 ## Other projects
 

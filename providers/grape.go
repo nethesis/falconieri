@@ -21,7 +21,7 @@
  */
 
 /*
- * Grape provisioning provider
+ * GRAPE provisioning provider
  */
 package providers
 
@@ -41,7 +41,7 @@ var (
 	grapeClientOnce sync.Once
 )
 
-// getGrapeClient returns a singleton Grape client instance.
+// getGrapeClient returns a singleton GRAPE client instance.
 // This allows API navigation caching to work effectively across multiple requests.
 // The client is created using configuration loaded at startup.
 func getGrapeClient() *grape.Client {

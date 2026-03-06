@@ -22,7 +22,7 @@
 
 package grape
 
-// Setting represents a configuration setting in the Grape API
+// Setting represents a configuration setting in the GRAPE API
 type Setting struct {
 	UUID      string `json:"uuid"`
 	ParamName string `json:"param_name"`

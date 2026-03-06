@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-// Client represents a Grape API client
+// Client represents a GRAPE API client
 type Client struct {
 	BaseURL      string
 	ClientID     string
@@ -55,7 +55,7 @@ type Client struct {
 	LastRespBody    string
 }
 
-// NewClient creates a new Grape API client
+// NewClient creates a new GRAPE API client
 func NewClient(baseURL, clientID, clientSecret string) *Client {
 	// Normalize BaseURL to ensure it ends with a slash
 	// This prevents invalid URLs when concatenating endpoint paths
