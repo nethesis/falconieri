@@ -79,7 +79,9 @@ func ParseProviderError(message string) error {
 		message == "800004", //ymcs
 		message == "800003", //ymcs: Resource already exists
 		strings.Contains(strings.ToLower(message), "device already managed"),
-		strings.Contains(strings.ToLower(message), "resource already exists"):
+		strings.Contains(strings.ToLower(message), "resource already exists"),
+		strings.Contains(strings.ToLower(message), "taken_mac_or_forbidden"), //grape/sraps
+		strings.Contains(strings.ToLower(message), "permission") && strings.Contains(strings.ToLower(message), "endpoint"): //grape/sraps: "User lacks permission to endpoint"
 
 		return errors.New("device_owned_by_other_user")
 

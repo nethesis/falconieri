@@ -35,6 +35,7 @@ import (
 	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/libs/grape"
 	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 var (
@@ -69,10 +70,18 @@ func (d SrapsDevice) Register() error {
 	if err != nil {
 		var apiErr grape.APIError
 		if errors.As(err, &apiErr) {
-			return models.ProviderError{
-				Message:      "provider_remote_call_failed",
-				WrappedError: apiErr,
+			// Parse the API error to map it to semantic error codes
+			parsedErr := utils.ParseProviderError(apiErr.Error())
+			if providerErr, ok := parsedErr.(models.ProviderError); ok {
+				// Already a semantic error from ParseProviderError
+				return providerErr
 			}
+			if _, ok := parsedErr.(*models.ProviderError); ok {
+				// Already a semantic error from ParseProviderError
+				return parsedErr
+			}
+			// Return semantic error (e.g., "device_owned_by_other_user")
+			return parsedErr
 		}
 
 		var urlErr *url.Error
