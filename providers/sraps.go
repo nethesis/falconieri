@@ -35,6 +35,7 @@ import (
 	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/libs/grape"
 	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 var (
@@ -69,10 +70,7 @@ func (d SrapsDevice) Register() error {
 	if err != nil {
 		var apiErr grape.APIError
 		if errors.As(err, &apiErr) {
-			return models.ProviderError{
-				Message:      "provider_remote_call_failed",
-				WrappedError: apiErr,
-			}
+			return utils.ParseProviderError(apiErr.Error())
 		}
 
 		var urlErr *url.Error

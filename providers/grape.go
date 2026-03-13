@@ -34,6 +34,7 @@ import (
 	"github.com/nethesis/falconieri/configuration"
 	"github.com/nethesis/falconieri/libs/grape"
 	"github.com/nethesis/falconieri/models"
+	"github.com/nethesis/falconieri/utils"
 )
 
 var (
@@ -68,10 +69,7 @@ func (d GrapeDevice) Register() error {
 		// Check if this is an API error (4xx/5xx from server)
 		var apiErr grape.APIError
 		if errors.As(err, &apiErr) {
-			return models.ProviderError{
-				Message:      "provider_remote_call_failed",
-				WrappedError: apiErr,
-			}
+			return utils.ParseProviderError(apiErr.Error())
 		}
 
 		// Check if this is a transport-level error (DNS, connection, timeout)
