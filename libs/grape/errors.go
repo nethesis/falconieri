@@ -38,9 +38,9 @@ type APIError struct {
 // Error implements the error interface
 func (e APIError) Error() string {
 	if e.Message != "" {
-		return fmt.Sprintf("GRAPE API error (HTTP %d): %s", e.StatusCode, e.Message)
+		return fmt.Sprintf("API error (HTTP %d): %s", e.StatusCode, e.Message)
 	}
-	return fmt.Sprintf("GRAPE API error (HTTP %d): %s", e.StatusCode, e.Status)
+	return fmt.Sprintf("API error (HTTP %d): %s", e.StatusCode, e.Status)
 }
 
 // parseErrorResponse attempts to extract error information from the response body
