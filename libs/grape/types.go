@@ -46,6 +46,6 @@ type CompanyResponse struct {
 type DeviceData struct {
 	MAC                      string                            `json:"mac"`
 	AutoprovisioningEnabled  bool                              `json:"autoprovisioning_enabled"`
-	WarrantyExpWarningPeriod *int                              `json:"warranty_exp_warning_period"`
+	WarrantyExpWarningPeriod *int                              `json:"warranty_exp_warning_period,omitempty"`
 	SettingsManager          map[string]map[string]interface{} `json:"settings_manager"`
 }
