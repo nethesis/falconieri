@@ -130,8 +130,9 @@ func createHawkAuthHeader(creds *HawkCredentials, method, rawURL string, payload
 	return authHeader, nil
 }
 
-// makeHawkRequest performs an HTTP request with Hawk authentication
-func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error) {
+// makeHawkRequestFull performs an HTTP request with Hawk authentication and
+// returns both the response body and headers (needed for Link-based pagination).
+func (c *Client) makeHawkRequestFull(method, url string, body []byte) ([]byte, http.Header, error) {
 	var req *http.Request
 	var err error
 	var contentType string
@@ -139,14 +140,14 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	if body != nil {
 		req, err = http.NewRequest(method, url, bytes.NewReader(body))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		contentType = "application/json"
 		req.Header.Set("Content-Type", contentType)
 	} else {
 		req, err = http.NewRequest(method, url, nil)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		contentType = ""
 	}
@@ -162,7 +163,7 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	// Add Hawk authentication header
 	authHeader, err := createHawkAuthHeader(creds, method, url, body, contentType)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Hawk auth header: %v", err)
+		return nil, nil, fmt.Errorf("failed to create Hawk auth header: %v", err)
 	}
 
 	req.Header.Set("Authorization", authHeader)
@@ -177,13 +178,13 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	// Store response for debugging
@@ -195,8 +196,14 @@ func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, parseErrorResponse(resp.StatusCode, resp.Status, bodyBytes)
+		return nil, nil, parseErrorResponse(resp.StatusCode, resp.Status, bodyBytes)
 	}
 
-	return bodyBytes, nil
+	return bodyBytes, resp.Header, nil
+}
+
+// makeHawkRequest performs an HTTP request with Hawk authentication
+func (c *Client) makeHawkRequest(method, url string, body []byte) ([]byte, error) {
+	bodyBytes, _, err := c.makeHawkRequestFull(method, url, body)
+	return bodyBytes, err
 }

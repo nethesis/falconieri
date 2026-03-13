@@ -25,6 +25,7 @@ package grape
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // getProvisioningServerID retrieves and caches the provisioning setting UUID.
@@ -33,37 +34,61 @@ import (
 // Uses sync.Once to prevent duplicate API calls under concurrent load.
 func (c *Client) getProvisioningServerID() (string, error) {
 	c.provisioningServerIDOnce.Do(func() {
-		// Get settings to find the provisioning setting UUID
-		settingsURL := c.BaseURL + "settings/"
-		settings, err := c.makeHawkRequest("GET", settingsURL, nil)
-		if err != nil {
-			c.provisioningServerIDErr = fmt.Errorf("failed to get settings: %w", err)
-			return
-		}
-
-		var settingsList []Setting
-		if err := json.Unmarshal(settings, &settingsList); err != nil {
-			c.provisioningServerIDErr = fmt.Errorf("failed to parse settings response: %w", err)
-			return
-		}
-
-		var settingProvisioningServerUUID string
-		for _, setting := range settingsList {
-			if setting.ParamName == c.ProvisioningSettingName {
-				settingProvisioningServerUUID = setting.UUID
-				break
+		// Fetch all settings pages to find the provisioning setting UUID.
+		// The API paginates with default 20 items; use page_size=1000 to
+		// minimise round-trips. Pagination continues while the response
+		// contains a Link header with rel="next".
+		nextURL := c.BaseURL + "settings/?page_size=1000"
+		for nextURL != "" {
+			pageBytes, headers, err := c.makeHawkRequestFull("GET", nextURL, nil)
+			if err != nil {
+				c.provisioningServerIDErr = fmt.Errorf("failed to get settings: %w", err)
+				return
 			}
+
+			var page []Setting
+			if err := json.Unmarshal(pageBytes, &page); err != nil {
+				c.provisioningServerIDErr = fmt.Errorf("failed to parse settings response: %w", err)
+				return
+			}
+
+			for _, setting := range page {
+				if setting.ParamName == c.ProvisioningSettingName {
+					c.provisioningServerID = setting.UUID
+					return
+				}
+			}
+
+			// Follow Link header for next page if present
+			nextURL = parseLinkNext(headers.Get("Link"))
 		}
 
-		if settingProvisioningServerUUID == "" {
-			c.provisioningServerIDErr = fmt.Errorf("%s setting not found in API response", c.ProvisioningSettingName)
-			return
-		}
-
-		c.provisioningServerID = settingProvisioningServerUUID
+		c.provisioningServerIDErr = fmt.Errorf("%s setting not found in API response", c.ProvisioningSettingName)
 	})
 
 	return c.provisioningServerID, c.provisioningServerIDErr
+}
+
+// parseLinkNext extracts the URL for rel="next" from an RFC 5988 Link header.
+// Returns an empty string if there is no next page.
+func parseLinkNext(linkHeader string) string {
+	// Format: <https://...>; rel="next", <https://...>; rel="prev"
+	for _, part := range strings.Split(linkHeader, ",") {
+		part = strings.TrimSpace(part)
+		segments := strings.Split(part, ";")
+		if len(segments) < 2 {
+			continue
+		}
+		for _, seg := range segments[1:] {
+			if strings.TrimSpace(seg) == `rel="next"` {
+				url := strings.TrimSpace(segments[0])
+				url = strings.TrimPrefix(url, "<")
+				url = strings.TrimSuffix(url, ">")
+				return url
+			}
+		}
+	}
+	return ""
 }
 
 // getEndpointsURL retrieves and caches the endpoints URL for device operations
