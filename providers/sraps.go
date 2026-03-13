@@ -70,18 +70,7 @@ func (d SrapsDevice) Register() error {
 	if err != nil {
 		var apiErr grape.APIError
 		if errors.As(err, &apiErr) {
-			// Parse the API error to map it to semantic error codes
-			parsedErr := utils.ParseProviderError(apiErr.Error())
-			if providerErr, ok := parsedErr.(models.ProviderError); ok {
-				// Already a semantic error from ParseProviderError
-				return providerErr
-			}
-			if _, ok := parsedErr.(*models.ProviderError); ok {
-				// Already a semantic error from ParseProviderError
-				return parsedErr
-			}
-			// Return semantic error (e.g., "device_owned_by_other_user")
-			return parsedErr
+			return utils.ParseProviderError(apiErr.Error())
 		}
 
 		var urlErr *url.Error
