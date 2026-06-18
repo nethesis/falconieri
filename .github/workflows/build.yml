@@ -37,6 +37,6 @@ jobs:
         with:
           name: 'falconieri'
       - name: Release Falconieri
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ${{steps.download.outputs.download-path}}/falconieri
