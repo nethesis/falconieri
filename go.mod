@@ -2,7 +2,7 @@ module github.com/nethesis/falconieri
 
 go 1.25.0
 
-toolchain go1.26.8
+toolchain go1.27.1
 
 require (
 	github.com/divan/gorilla-xmlrpc v0.0.0-20190926132722-f0686da74fda
