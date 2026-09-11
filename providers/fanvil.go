@@ -85,8 +85,12 @@ func (d FanvilDevice) Register() error {
 
 	err = fanvilParseResponse(resp.Body)
 
-	if (err != nil) && (errors.Unwrap(err).Error() != "Error:server_not_exist") {
-		return err
+	if err != nil {
+		cause := errors.Unwrap(err)
+		// An absent server is expected when registering a device for the first time.
+		if cause == nil || (cause.Error() != "Error:server_not_exist" && cause.Error() != "Error:server_not_existed") {
+			return err
+		}
 	}
 
 	//Create Server
