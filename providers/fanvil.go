@@ -53,11 +53,11 @@ func (d FanvilDevice) Register() error {
 
 	password := fanvilGetPassword()
 
-	//Delete old server
-	buf, _ := xml.EncodeClientRequest("redirect.deleteServer",
+	// Fanvil refuses to delete a server while a device is still registered to it.
+	buf, _ := xml.EncodeClientRequest("redirect.deRegisterDevice",
 		&struct {
-			GroupName string
-		}{GroupName: d.Mac})
+			Mac string
+		}{Mac: d.Mac})
 
 	req, _ := http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
@@ -68,6 +68,44 @@ func (d FanvilDevice) Register() error {
 	req.Header.Set("User-Agent", " Falconieri/1")
 
 	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("provider_remote_call_failed")
+	}
+
+	err = fanvilParseResponse(resp.Body)
+	if err != nil {
+		cause := errors.Unwrap(err)
+		// A device that has never been registered needs no cleanup.
+		if cause == nil || cause.Error() != "Error:device_not_exist" {
+			return err
+		}
+	}
+
+	//Delete old server
+	buf, _ = xml.EncodeClientRequest("redirect.deleteServer",
+		&struct {
+			GroupName string
+		}{GroupName: d.Mac})
+
+	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
+		bytes.NewReader(buf))
+
+	req.SetBasicAuth(configuration.Config.Providers.Fanvil.User, password)
+
+	req.Header.Set("Content-Type", "text/xml")
+	req.Header.Set("User-Agent", " Falconieri/1")
+
+	resp, err = http.DefaultClient.Do(req)
 
 	if err != nil {
 		return models.ProviderError{
@@ -152,36 +190,6 @@ func (d FanvilDevice) Register() error {
 
 	if err != nil {
 		return err
-	}
-
-	//Deregister the device
-	buf, _ = xml.EncodeClientRequest("redirect.deRegisterDevice",
-		&struct {
-			Mac string
-		}{Mac: d.Mac})
-
-	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
-		bytes.NewReader(buf))
-
-	req.SetBasicAuth(configuration.Config.Providers.Fanvil.User, password)
-
-	req.Header.Set("Content-Type", "text/xml")
-	req.Header.Set("User-Agent", " Falconieri/1")
-
-	resp, err = http.DefaultClient.Do(req)
-
-	if err != nil {
-		return models.ProviderError{
-			Message:      "connection_to_remote_provider_failed",
-			WrappedError: err,
-		}
-
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("provider_remote_call_failed")
 	}
 
 	//Register the device
