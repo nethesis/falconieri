@@ -28,12 +28,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/divan/gorilla-xmlrpc/xml"
 
@@ -47,17 +48,76 @@ type FanvilDevice struct {
 	Url string
 }
 
-var fanvilPassword string
+type fanvilDeviceLock struct {
+	sync.Mutex
+	users int
+}
+
+var (
+	fanvilPassword      string
+	fanvilPasswordMutex sync.Mutex
+	fanvilHTTPClient    = &http.Client{Timeout: 30 * time.Second}
+	fanvilDeviceLocks   = struct {
+		sync.Mutex
+		devices map[string]*fanvilDeviceLock
+	}{devices: make(map[string]*fanvilDeviceLock)}
+)
+
+// fanvilLockDevice prevents requests for the same phone from interleaving.
+func fanvilLockDevice(mac string) func() {
+	fanvilDeviceLocks.Lock()
+	lock := fanvilDeviceLocks.devices[mac]
+	if lock == nil {
+		lock = &fanvilDeviceLock{}
+		fanvilDeviceLocks.devices[mac] = lock
+	}
+	lock.users++
+	fanvilDeviceLocks.Unlock()
+
+	lock.Lock()
+	return func() {
+		lock.Unlock()
+		fanvilDeviceLocks.Lock()
+		defer fanvilDeviceLocks.Unlock()
+		lock.users--
+		if lock.users == 0 {
+			delete(fanvilDeviceLocks.devices, mac)
+		}
+	}
+}
 
 func (d FanvilDevice) Register() error {
+	Url, err := url.Parse(d.Url)
+	if err != nil || Url.Hostname() == "" {
+		return errors.New("malformed_url")
+	}
 
+	var UrlScheme string
+	switch Url.Scheme {
+	case "ftp":
+		UrlScheme = "1"
+	case "tftp":
+		UrlScheme = "2"
+	case "http":
+		UrlScheme = "4"
+	case "https":
+		UrlScheme = "5"
+	default:
+		return errors.New("malformed_url")
+	}
+
+	unlock := fanvilLockDevice(d.Mac)
+	defer unlock()
+
+	fanvilPasswordMutex.Lock()
 	password := fanvilGetPassword()
+	fanvilPasswordMutex.Unlock()
 
-	//Delete old server
-	buf, _ := xml.EncodeClientRequest("redirect.deleteServer",
+	// Fanvil refuses to delete a server while a device is still registered to it.
+	buf, _ := xml.EncodeClientRequest("redirect.deRegisterDevice",
 		&struct {
-			GroupName string
-		}{GroupName: d.Mac})
+			Mac string
+		}{Mac: d.Mac})
 
 	req, _ := http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
 		bytes.NewReader(buf))
@@ -67,7 +127,45 @@ func (d FanvilDevice) Register() error {
 	req.Header.Set("Content-Type", "text/xml")
 	req.Header.Set("User-Agent", " Falconieri/1")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := fanvilHTTPClient.Do(req)
+
+	if err != nil {
+		return models.ProviderError{
+			Message:      "connection_to_remote_provider_failed",
+			WrappedError: err,
+		}
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("provider_remote_call_failed")
+	}
+
+	err = fanvilParseResponse(resp.Body)
+	if err != nil {
+		cause := errors.Unwrap(err)
+		// A device that has never been registered needs no cleanup.
+		if cause == nil || cause.Error() != "Error:device_not_exist" {
+			return err
+		}
+	}
+
+	//Delete old server
+	buf, _ = xml.EncodeClientRequest("redirect.deleteServer",
+		&struct {
+			GroupName string
+		}{GroupName: d.Mac})
+
+	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
+		bytes.NewReader(buf))
+
+	req.SetBasicAuth(configuration.Config.Providers.Fanvil.User, password)
+
+	req.Header.Set("Content-Type", "text/xml")
+	req.Header.Set("User-Agent", " Falconieri/1")
+
+	resp, err = fanvilHTTPClient.Do(req)
 
 	if err != nil {
 		return models.ProviderError{
@@ -85,25 +183,12 @@ func (d FanvilDevice) Register() error {
 
 	err = fanvilParseResponse(resp.Body)
 
-	if (err != nil) && (errors.Unwrap(err).Error() != "Error:server_not_exist") {
-		return err
-	}
-
-	//Create Server
-	var Url *url.URL
-	var UrlScheme string
-
-	Url, err = url.Parse(d.Url)
-
-	switch Url.Scheme {
-	case "ftp":
-		UrlScheme = "1"
-	case "tftp":
-		UrlScheme = "2"
-	case "http":
-		UrlScheme = "4"
-	case "https":
-		UrlScheme = "5"
+	if err != nil {
+		cause := errors.Unwrap(err)
+		// An absent server is expected when registering a device for the first time.
+		if cause == nil || (cause.Error() != "Error:server_not_exist" && cause.Error() != "Error:server_not_existed") {
+			return err
+		}
 	}
 
 	/* Server/Group configuration:
@@ -128,7 +213,7 @@ func (d FanvilDevice) Register() error {
 	req.Header.Set("Content-Type", "text/xml")
 	req.Header.Set("User-Agent", " Falconieri/1")
 
-	resp, err = http.DefaultClient.Do(req)
+	resp, err = fanvilHTTPClient.Do(req)
 
 	if err != nil {
 		return models.ProviderError{
@@ -150,36 +235,6 @@ func (d FanvilDevice) Register() error {
 		return err
 	}
 
-	//Deregister the device
-	buf, _ = xml.EncodeClientRequest("redirect.deRegisterDevice",
-		&struct {
-			Mac string
-		}{Mac: d.Mac})
-
-	req, _ = http.NewRequest("POST", configuration.Config.Providers.Fanvil.RpcUrl,
-		bytes.NewReader(buf))
-
-	req.SetBasicAuth(configuration.Config.Providers.Fanvil.User, password)
-
-	req.Header.Set("Content-Type", "text/xml")
-	req.Header.Set("User-Agent", " Falconieri/1")
-
-	resp, err = http.DefaultClient.Do(req)
-
-	if err != nil {
-		return models.ProviderError{
-			Message:      "connection_to_remote_provider_failed",
-			WrappedError: err,
-		}
-
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("provider_remote_call_failed")
-	}
-
 	//Register the device
 	buf, _ = xml.EncodeClientRequest("redirect.registerDevice",
 		&struct {
@@ -195,7 +250,7 @@ func (d FanvilDevice) Register() error {
 	req.Header.Set("Content-Type", "text/xml")
 	req.Header.Set("User-Agent", " Falconieri/1")
 
-	resp, err = http.DefaultClient.Do(req)
+	resp, err = fanvilHTTPClient.Do(req)
 
 	if err != nil {
 		return models.ProviderError{
@@ -239,7 +294,7 @@ func fanvilParseResponse(body io.ReadCloser) error {
 
 	var response_regexp = `(?s).*<boolean>(.*)</boolean>.*<string>(.*)</string>.*`
 
-	respBytes, err := ioutil.ReadAll(body)
+	respBytes, err := io.ReadAll(body)
 
 	if err != nil {
 		return errors.New("read_remote_response_failed")
